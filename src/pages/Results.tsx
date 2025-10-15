@@ -1,12 +1,33 @@
+import { useEffect } from "react";
 import { BarChart3, TrendingUp, Clock, Download, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { useData } from "@/contexts/DataContext";
+import { useToast } from "@/hooks/use-toast";
 
 const Results = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const { csvData, csvColumns, fileName } = useData();
+
+  useEffect(() => {
+    if (!csvData || !csvColumns) {
+      toast({
+        title: "Sin datos",
+        description: "Por favor completa el flujo de entrenamiento primero",
+        variant: "destructive"
+      });
+      navigate("/upload");
+    }
+  }, [csvData, csvColumns, navigate, toast]);
+
+  const selectedColumns = csvColumns?.filter(c => c.selected) || [];
+  const totalSamples = csvData?.length || 0;
+  const trainingSamples = Math.floor(totalSamples * 0.8);
+  const testSamples = totalSamples - trainingSamples;
 
   const metrics = [
     { label: "Accuracy", value: 94.7, color: "from-primary to-primary-glow" },
@@ -64,7 +85,7 @@ const Results = () => {
               </div>
               <div className="flex-1">
                 <h3 className="font-semibold text-foreground">Entrenamiento Completado</h3>
-                <p className="text-sm text-muted-foreground">Random Forest - 100 épocas - 1,247 muestras</p>
+                <p className="text-sm text-muted-foreground">Random Forest - 100 épocas - {totalSamples.toLocaleString()} muestras - {fileName}</p>
               </div>
               <Badge className="bg-primary text-primary-foreground">
                 <Clock className="w-3 h-3 mr-1" />
@@ -180,19 +201,19 @@ const Results = () => {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
                   <p className="text-xs text-muted-foreground">Total Samples</p>
-                  <p className="font-mono text-sm font-medium text-foreground">1,247</p>
+                  <p className="font-mono text-sm font-medium text-foreground">{totalSamples.toLocaleString()}</p>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">Training Set</p>
-                  <p className="font-mono text-sm font-medium text-foreground">997 (80%)</p>
+                  <p className="font-mono text-sm font-medium text-foreground">{trainingSamples.toLocaleString()} (80%)</p>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">Test Set</p>
-                  <p className="font-mono text-sm font-medium text-foreground">250 (20%)</p>
+                  <p className="font-mono text-sm font-medium text-foreground">{testSamples.toLocaleString()} (20%)</p>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">Features</p>
-                  <p className="font-mono text-sm font-medium text-foreground">4 columns</p>
+                  <p className="font-mono text-sm font-medium text-foreground">{selectedColumns.length} columns</p>
                 </div>
               </div>
             </div>
