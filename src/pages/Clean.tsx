@@ -1,41 +1,48 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Sparkles, ArrowRight, Trash2, Filter, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
+import { useData } from "@/contexts/DataContext";
+import { useToast } from "@/hooks/use-toast";
 
 const Clean = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const { csvData, csvColumns, setCsvColumns } = useData();
   
-  // Mock data
-  const [columns, setColumns] = useState([
-    { id: 1, name: "customer_id", type: "int", selected: true, nulls: 0 },
-    { id: 2, name: "purchase_amount", type: "float", selected: true, nulls: 3 },
-    { id: 3, name: "product_category", type: "string", selected: true, nulls: 0 },
-    { id: 4, name: "timestamp", type: "datetime", selected: true, nulls: 1 },
-    { id: 5, name: "customer_email", type: "string", selected: false, nulls: 5 },
-  ]);
+  const [columns, setColumns] = useState(csvColumns || []);
+  const [data, setData] = useState(csvData || []);
 
-  const mockData = [
-    { customer_id: 1001, purchase_amount: 45.99, product_category: "Electronics", timestamp: "2024-01-15 10:30" },
-    { customer_id: 1002, purchase_amount: 78.50, product_category: "Clothing", timestamp: "2024-01-15 11:20" },
-    { customer_id: 1003, purchase_amount: null, product_category: "Books", timestamp: "2024-01-15 12:45" },
-    { customer_id: 1004, purchase_amount: 120.00, product_category: "Electronics", timestamp: null },
-  ];
+  useEffect(() => {
+    if (!csvData || !csvColumns) {
+      toast({
+        title: "Sin datos",
+        description: "Por favor sube un archivo CSV primero",
+        variant: "destructive"
+      });
+      navigate("/upload");
+    } else {
+      setColumns(csvColumns);
+      setData(csvData);
+    }
+  }, [csvData, csvColumns, navigate, toast]);
 
   const stats = {
-    totalRows: 1247,
+    totalRows: data.length,
     selectedColumns: columns.filter(c => c.selected).length,
     totalNulls: columns.reduce((sum, col) => sum + col.nulls, 0),
-    duplicates: 12
+    duplicates: 0
   };
 
   const toggleColumn = (id: number) => {
-    setColumns(columns.map(col => 
+    const newColumns = columns.map(col => 
       col.id === id ? { ...col, selected: !col.selected } : col
-    ));
+    );
+    setColumns(newColumns);
+    setCsvColumns(newColumns);
   };
 
   return (
@@ -146,7 +153,7 @@ const Clean = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-xl font-semibold text-foreground">Vista Previa de Datos</h2>
-                  <p className="text-sm text-muted-foreground">Primeras 4 filas del dataset</p>
+                  <p className="text-sm text-muted-foreground">Primeras 10 filas del dataset</p>
                 </div>
                 <Button variant="outline" size="sm" className="gap-2">
                   <Download className="w-4 h-4" />
@@ -166,11 +173,11 @@ const Clean = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {mockData.map((row, idx) => (
+                    {data.slice(0, 10).map((row, idx) => (
                       <tr key={idx} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
                         {columns.filter(c => c.selected).map((col) => (
                           <td key={col.id} className="p-3 text-sm text-muted-foreground font-mono">
-                            {row[col.name as keyof typeof row] ?? <span className="text-destructive">null</span>}
+                            {row[col.name] ?? <span className="text-destructive">null</span>}
                           </td>
                         ))}
                       </tr>

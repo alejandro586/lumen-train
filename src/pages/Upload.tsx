@@ -6,10 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { useData } from "@/contexts/DataContext";
 
 const Upload = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { setCsvData, setCsvColumns, setFileName } = useData();
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [dbConfig, setDbConfig] = useState({
     host: "",
@@ -22,6 +24,42 @@ const Upload = () => {
     const file = e.target.files?.[0];
     if (file && file.type === "text/csv") {
       setUploadedFile(file);
+      setFileName(file.name);
+      
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const text = event.target?.result as string;
+        const lines = text.split('\n').filter(line => line.trim());
+        const headers = lines[0].split(',').map(h => h.trim());
+        
+        const data = lines.slice(1).map(line => {
+          const values = line.split(',').map(v => v.trim());
+          return headers.reduce((obj, header, index) => {
+            obj[header] = values[index] || null;
+            return obj;
+          }, {} as any);
+        });
+        
+        const columns = headers.map((header, index) => {
+          const nullCount = data.filter(row => !row[header] || row[header] === '').length;
+          const sampleValue = data.find(row => row[header])?.header;
+          const isNumeric = data.some(row => row[header] && !isNaN(Number(row[header])));
+          
+          return {
+            id: index + 1,
+            name: header,
+            type: isNumeric ? 'float' : 'string',
+            selected: true,
+            nulls: nullCount
+          };
+        });
+        
+        setCsvData(data);
+        setCsvColumns(columns);
+      };
+      
+      reader.readAsText(file);
+      
       toast({
         title: "Archivo cargado",
         description: `${file.name} está listo para procesar`,

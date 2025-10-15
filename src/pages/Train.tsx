@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Settings, ArrowRight, Play, Code2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -9,12 +9,25 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
+import { useData } from "@/contexts/DataContext";
 
 const Train = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { csvData, csvColumns } = useData();
   const [framework, setFramework] = useState("sklearn");
   const [isTraining, setIsTraining] = useState(false);
+
+  useEffect(() => {
+    if (!csvData || !csvColumns) {
+      toast({
+        title: "Sin datos",
+        description: "Por favor sube y limpia un archivo CSV primero",
+        variant: "destructive"
+      });
+      navigate("/upload");
+    }
+  }, [csvData, csvColumns, navigate, toast]);
   const [config, setConfig] = useState({
     modelType: "random_forest",
     testSize: 0.2,
@@ -25,10 +38,12 @@ const Train = () => {
   });
 
   const handleTrain = () => {
+    const selectedColumns = csvColumns?.filter(c => c.selected) || [];
+    
     setIsTraining(true);
     toast({
       title: "Entrenamiento iniciado",
-      description: `Modelo ${config.modelType} con ${framework}`,
+      description: `Modelo ${config.modelType} con ${framework} usando ${csvData?.length} filas y ${selectedColumns.length} columnas`,
     });
     
     setTimeout(() => {
