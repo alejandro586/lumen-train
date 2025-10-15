@@ -1,5 +1,12 @@
 import { useEffect } from "react";
-import { BarChart3, TrendingUp, Clock, Download, CheckCircle2 } from "lucide-react";
+import {
+  BarChart3,
+  TrendingUp,
+  Clock,
+  Download,
+  CheckCircle2,
+  Database,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -18,22 +25,22 @@ const Results = () => {
       toast({
         title: "Sin datos",
         description: "Por favor completa el flujo de entrenamiento primero",
-        variant: "destructive"
+        variant: "destructive",
       });
       navigate("/upload");
     }
   }, [csvData, csvColumns, navigate, toast]);
 
-  const selectedColumns = csvColumns?.filter(c => c.selected) || [];
+  const selectedColumns = csvColumns?.filter((c) => c.selected) || [];
   const totalSamples = csvData?.length || 0;
   const trainingSamples = Math.floor(totalSamples * 0.8);
   const testSamples = totalSamples - trainingSamples;
 
   const metrics = [
-    { label: "Accuracy", value: 94.7, color: "from-primary to-primary-glow" },
-    { label: "Precision", value: 92.3, color: "from-accent to-secondary-purple" },
-    { label: "Recall", value: 91.8, color: "from-primary to-accent" },
-    { label: "F1-Score", value: 93.1, color: "from-secondary-purple to-primary" },
+    { label: "Accuracy", value: 94.7 },
+    { label: "Precision", value: 92.3 },
+    { label: "Recall", value: 91.8 },
+    { label: "F1-Score", value: 93.1 },
   ];
 
   const trainingHistory = [
@@ -46,191 +53,199 @@ const Results = () => {
 
   const confusionMatrix = [
     [245, 12],
-    [8, 235]
+    [8, 235],
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background/70 to-primary/5 backdrop-blur-xl text-foreground">
       {/* Header */}
-      <header className="border-b border-border/50 bg-card/50 backdrop-blur-sm">
-        <div className="container mx-auto px-6 py-6">
-          <div className="flex items-center gap-3">
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => navigate("/")}
-              className="gap-2"
-            >
-              ← Dashboard
-            </Button>
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-secondary-purple to-primary flex items-center justify-center">
-              <BarChart3 className="w-6 h-6 text-primary-foreground" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">Resultados</h1>
-              <p className="text-sm text-muted-foreground">Métricas y análisis del modelo</p>
-            </div>
+      <header className="sticky top-0 z-20 bg-card/50 backdrop-blur-md border-b border-border/40 shadow-sm">
+        <div className="container mx-auto px-6 py-5 flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate("/")}
+            className="hover:text-primary transition-colors"
+          >
+            ← Dashboard
+          </Button>
+
+          <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg animate-pulse-slow">
+            <BarChart3 className="w-6 h-6 text-primary-foreground" />
+          </div>
+
+          <div>
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              Resultados del Modelo
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Métricas y análisis del entrenamiento
+            </p>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-6 py-12">
-        <div className="space-y-8 animate-fade-in">
-          
-          {/* Success Banner */}
-          <Card className="p-6 shadow-card bg-gradient-to-br from-primary/5 to-accent/5 border-primary/20">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-gradient-primary flex items-center justify-center">
-                <CheckCircle2 className="w-6 h-6 text-primary-foreground" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-foreground">Entrenamiento Completado</h3>
-                <p className="text-sm text-muted-foreground">Random Forest - 100 épocas - {totalSamples.toLocaleString()} muestras - {fileName}</p>
-              </div>
-              <Badge className="bg-primary text-primary-foreground">
-                <Clock className="w-3 h-3 mr-1" />
-                2m 34s
-              </Badge>
+      {/* Main */}
+      <main className="container mx-auto px-6 py-10 space-y-10 animate-fade-in">
+        {/* Banner */}
+        <Card className="p-6 border border-primary/20 bg-gradient-to-br from-primary/10 to-accent/10 shadow-lg hover:shadow-primary/10 transition-shadow">
+          <div className="flex items-center gap-5">
+            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-md">
+              <CheckCircle2 className="w-7 h-7 text-primary-foreground" />
             </div>
-          </Card>
-
-          {/* Main Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {metrics.map((metric, idx) => (
-              <Card 
-                key={metric.label}
-                className="p-6 shadow-card bg-gradient-card border-border/50 animate-scale-in"
-                style={{ animationDelay: `${idx * 100}ms` }}
-              >
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm text-muted-foreground">{metric.label}</p>
-                    <TrendingUp className="w-4 h-4 text-primary" />
-                  </div>
-                  <div className="space-y-2">
-                    <p className="text-3xl font-bold bg-gradient-to-br bg-clip-text text-transparent" 
-                       style={{ backgroundImage: `linear-gradient(135deg, hsl(221 83% 53%), hsl(271 76% 53%))` }}>
-                      {metric.value}%
-                    </p>
-                    <Progress value={metric.value} className="h-2" />
-                  </div>
-                </div>
-              </Card>
-            ))}
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold">Entrenamiento Completado ✅</h3>
+              <p className="text-sm text-muted-foreground">
+                Modelo: Random Forest — 100 épocas — {totalSamples.toLocaleString()} muestras — {fileName}
+              </p>
+            </div>
+            <Badge className="bg-primary/90 text-primary-foreground flex items-center gap-1">
+              <Clock className="w-3 h-3" /> 2m 34s
+            </Badge>
           </div>
+        </Card>
 
-          {/* Training History */}
-          <Card className="p-8 shadow-card bg-gradient-card border-border/50">
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-xl font-semibold text-foreground">Historial de Entrenamiento</h2>
-                  <p className="text-sm text-muted-foreground">Evolución de loss y accuracy por época</p>
-                </div>
-                <Button variant="outline" size="sm" className="gap-2">
-                  <Download className="w-4 h-4" />
-                  Exportar
-                </Button>
-              </div>
-
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-border">
-                      <th className="text-left p-3 text-sm font-semibold text-foreground">Época</th>
-                      <th className="text-left p-3 text-sm font-semibold text-foreground">Loss</th>
-                      <th className="text-left p-3 text-sm font-semibold text-foreground">Accuracy</th>
-                      <th className="text-left p-3 text-sm font-semibold text-foreground">Val Loss</th>
-                      <th className="text-left p-3 text-sm font-semibold text-foreground">Val Accuracy</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {trainingHistory.map((row) => (
-                      <tr key={row.epoch} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
-                        <td className="p-3 text-sm font-medium text-foreground">{row.epoch}</td>
-                        <td className="p-3 text-sm font-mono text-muted-foreground">{row.loss.toFixed(3)}</td>
-                        <td className="p-3 text-sm font-mono text-primary">{row.accuracy.toFixed(1)}%</td>
-                        <td className="p-3 text-sm font-mono text-muted-foreground">{row.valLoss.toFixed(3)}</td>
-                        <td className="p-3 text-sm font-mono text-accent">{row.valAccuracy.toFixed(1)}%</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </Card>
-
-          {/* Confusion Matrix */}
-          <Card className="p-8 shadow-card bg-gradient-card border-border/50">
-            <div className="space-y-6">
-              <div>
-                <h2 className="text-xl font-semibold text-foreground">Matriz de Confusión</h2>
-                <p className="text-sm text-muted-foreground">Predicciones vs valores reales</p>
-              </div>
-
-              <div className="max-w-md mx-auto">
-                <div className="grid grid-cols-3 gap-2">
-                  <div></div>
-                  <div className="text-center text-sm font-semibold text-muted-foreground">Pred: 0</div>
-                  <div className="text-center text-sm font-semibold text-muted-foreground">Pred: 1</div>
-                  
-                  <div className="text-sm font-semibold text-muted-foreground flex items-center">Real: 0</div>
-                  <div className="aspect-square rounded-lg bg-primary/10 border-2 border-primary flex items-center justify-center">
-                    <span className="text-2xl font-bold text-primary">{confusionMatrix[0][0]}</span>
-                  </div>
-                  <div className="aspect-square rounded-lg bg-destructive/10 border-2 border-destructive/30 flex items-center justify-center">
-                    <span className="text-2xl font-bold text-destructive">{confusionMatrix[0][1]}</span>
-                  </div>
-
-                  <div className="text-sm font-semibold text-muted-foreground flex items-center">Real: 1</div>
-                  <div className="aspect-square rounded-lg bg-destructive/10 border-2 border-destructive/30 flex items-center justify-center">
-                    <span className="text-2xl font-bold text-destructive">{confusionMatrix[1][0]}</span>
-                  </div>
-                  <div className="aspect-square rounded-lg bg-primary/10 border-2 border-primary flex items-center justify-center">
-                    <span className="text-2xl font-bold text-primary">{confusionMatrix[1][1]}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </Card>
-
-          {/* Data Overview */}
-          <Card className="p-6 shadow-card bg-gradient-card border-border/50">
-            <div className="space-y-3">
-              <h3 className="font-semibold text-foreground">Dataset Procesado</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div>
-                  <p className="text-xs text-muted-foreground">Total Samples</p>
-                  <p className="font-mono text-sm font-medium text-foreground">{totalSamples.toLocaleString()}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Training Set</p>
-                  <p className="font-mono text-sm font-medium text-foreground">{trainingSamples.toLocaleString()} (80%)</p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Test Set</p>
-                  <p className="font-mono text-sm font-medium text-foreground">{testSamples.toLocaleString()} (20%)</p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Features</p>
-                  <p className="font-mono text-sm font-medium text-foreground">{selectedColumns.length} columns</p>
-                </div>
-              </div>
-            </div>
-          </Card>
-
-          {/* Action Buttons */}
-          <div className="flex justify-between">
-            <Button variant="outline" onClick={() => navigate("/train")}>
-              ← Volver a Entrenar
-            </Button>
-            <Button 
-              onClick={() => navigate("/")}
-              className="bg-gradient-primary hover:opacity-90 transition-opacity"
+        {/* Métricas */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {metrics.map((metric, i) => (
+            <Card
+              key={metric.label}
+              className="p-6 border border-border/30 bg-gradient-to-br from-card/70 to-card/30 backdrop-blur-sm hover:scale-[1.04] transition-transform shadow-md"
+              style={{ animationDelay: `${i * 100}ms` }}
             >
-              Volver al Dashboard
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-muted-foreground">{metric.label}</p>
+                  <TrendingUp className="w-4 h-4 text-primary" />
+                </div>
+                <h3 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                  {metric.value}%
+                </h3>
+                <Progress value={metric.value} className="h-2" />
+              </div>
+            </Card>
+          ))}
+        </div>
+
+        {/* Historial */}
+        <Card className="p-8 border border-border/40 bg-card/40 backdrop-blur-sm shadow-lg">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-xl font-semibold">Historial de Entrenamiento</h2>
+              <p className="text-sm text-muted-foreground">
+                Evolución del loss y accuracy por época
+              </p>
+            </div>
+            <Button variant="outline" size="sm" className="gap-2 hover:bg-primary/10">
+              <Download className="w-4 h-4" />
+              Exportar
             </Button>
           </div>
+
+          <div className="overflow-x-auto rounded-lg border border-border/20">
+            <table className="w-full text-sm">
+              <thead className="bg-gradient-to-r from-primary/10 to-accent/10">
+                <tr>
+                  {["Época", "Loss", "Accuracy", "Val Loss", "Val Accuracy"].map((head) => (
+                    <th
+                      key={head}
+                      className="text-left p-3 font-semibold text-foreground"
+                    >
+                      {head}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {trainingHistory.map((row) => (
+                  <tr
+                    key={row.epoch}
+                    className="border-t border-border/30 hover:bg-primary/5 transition-colors"
+                  >
+                    <td className="p-3">{row.epoch}</td>
+                    <td className="p-3 text-muted-foreground">{row.loss.toFixed(3)}</td>
+                    <td className="p-3 text-primary font-semibold">
+                      {row.accuracy.toFixed(1)}%
+                    </td>
+                    <td className="p-3 text-muted-foreground">
+                      {row.valLoss.toFixed(3)}
+                    </td>
+                    <td className="p-3 text-accent font-semibold">
+                      {row.valAccuracy.toFixed(1)}%
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+
+        {/* Matriz de confusión */}
+        <Card className="p-8 border border-border/40 bg-card/40 shadow-md">
+          <h2 className="text-xl font-semibold mb-2">Matriz de Confusión</h2>
+          <p className="text-sm text-muted-foreground mb-6">
+            Comparación entre predicciones y valores reales
+          </p>
+
+          <div className="max-w-md mx-auto grid grid-cols-3 gap-2 text-center">
+            <div></div>
+            <div className="font-semibold text-muted-foreground">Pred: 0</div>
+            <div className="font-semibold text-muted-foreground">Pred: 1</div>
+
+            <div className="font-semibold text-muted-foreground">Real: 0</div>
+            <div className="aspect-square rounded-xl bg-primary/10 border border-primary/50 flex items-center justify-center">
+              <span className="text-lg font-bold text-primary">{confusionMatrix[0][0]}</span>
+            </div>
+            <div className="aspect-square rounded-xl bg-destructive/10 border border-destructive/40 flex items-center justify-center">
+              <span className="text-lg font-bold text-destructive">{confusionMatrix[0][1]}</span>
+            </div>
+
+            <div className="font-semibold text-muted-foreground">Real: 1</div>
+            <div className="aspect-square rounded-xl bg-destructive/10 border border-destructive/40 flex items-center justify-center">
+              <span className="text-lg font-bold text-destructive">{confusionMatrix[1][0]}</span>
+            </div>
+            <div className="aspect-square rounded-xl bg-primary/10 border border-primary/50 flex items-center justify-center">
+              <span className="text-lg font-bold text-primary">{confusionMatrix[1][1]}</span>
+            </div>
+          </div>
+        </Card>
+
+        {/* Dataset */}
+        <Card className="p-6 border border-border/40 bg-card/40 shadow-sm">
+          <h3 className="font-semibold mb-4 flex items-center gap-2">
+            <Database className="w-4 h-4 text-primary" /> Dataset Procesado
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div>
+              <p className="text-muted-foreground">Total Samples</p>
+              <p className="font-mono text-foreground">{totalSamples.toLocaleString()}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">Training Set</p>
+              <p className="font-mono text-foreground">{trainingSamples} (80%)</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">Test Set</p>
+              <p className="font-mono text-foreground">{testSamples} (20%)</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">Features</p>
+              <p className="font-mono text-foreground">{selectedColumns.length} columnas</p>
+            </div>
+          </div>
+        </Card>
+
+        {/* Botones */}
+        <div className="flex justify-between items-center pt-6">
+          <Button variant="outline" onClick={() => navigate("/train")} className="hover:bg-primary/10">
+            ← Reentrenar
+          </Button>
+          <Button
+            onClick={() => navigate("/")}
+            className="bg-gradient-to-r from-primary to-accent text-white shadow-md hover:opacity-90 transition-opacity"
+          >
+            Volver al Dashboard
+          </Button>
         </div>
       </main>
     </div>
