@@ -57,9 +57,13 @@ const Results = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background/70 to-primary/5 backdrop-blur-xl text-foreground">
+    <div className="min-h-screen bg-background dark text-foreground relative overflow-hidden">
+      {/* Fondo decorativo */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/0.12),transparent_60%)]"></div>
+      <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-accent/5 rounded-full blur-3xl animate-pulse"></div>
+      
       {/* Header */}
-      <header className="sticky top-0 z-20 bg-card/50 backdrop-blur-md border-b border-border/40 shadow-sm">
+      <header className="sticky top-0 z-20 bg-card/30 backdrop-blur-xl border-b border-border/50 shadow-lg">
         <div className="container mx-auto px-6 py-5 flex items-center gap-4">
           <Button
             variant="ghost"
@@ -70,12 +74,12 @@ const Results = () => {
             ← Dashboard
           </Button>
 
-          <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg animate-pulse-slow">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-primary flex items-center justify-center shadow-glow">
             <BarChart3 className="w-6 h-6 text-primary-foreground" />
           </div>
 
           <div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               Resultados del Modelo
             </h1>
             <p className="text-sm text-muted-foreground">
@@ -86,23 +90,10 @@ const Results = () => {
       </header>
 
       {/* Main */}
-      <main className="container mx-auto px-6 py-10 space-y-10 animate-fade-in">
+      <main className="container mx-auto px-6 py-10 space-y-10 animate-fade-in relative z-10">
         {/* Banner */}
-        <Card className="p-6 border border-primary/20 bg-gradient-to-br from-primary/10 to-accent/10 shadow-lg hover:shadow-primary/10 transition-shadow">
-          <div className="flex items-center gap-5">
-            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-md">
-              <CheckCircle2 className="w-7 h-7 text-primary-foreground" />
-            </div>
-            <div className="flex-1">
-              <h3 className="text-lg font-semibold">Entrenamiento Completado ✅</h3>
-              <p className="text-sm text-muted-foreground">
-                Modelo: Random Forest — 100 épocas — {totalSamples.toLocaleString()} muestras — {fileName}
-              </p>
-            </div>
-            <Badge className="bg-primary/90 text-primary-foreground flex items-center gap-1">
-              <Clock className="w-3 h-3" /> 2m 34s
-            </Badge>
-          </div>
+        <Card className="p-6 border border-primary/30 bg-gradient-card shadow-card hover:shadow-card-hover transition-all duration-500">
+...
         </Card>
 
         {/* Métricas */}
@@ -110,7 +101,7 @@ const Results = () => {
           {metrics.map((metric, i) => (
             <Card
               key={metric.label}
-              className="p-6 border border-border/30 bg-gradient-to-br from-card/70 to-card/30 backdrop-blur-sm hover:scale-[1.04] transition-transform shadow-md"
+              className="p-6 border border-border/50 bg-gradient-card backdrop-blur-sm hover:scale-[1.05] hover:-translate-y-1 transition-all duration-500 shadow-card animate-fade-in"
               style={{ animationDelay: `${i * 100}ms` }}
             >
               <div className="space-y-3">
@@ -118,7 +109,7 @@ const Results = () => {
                   <p className="text-sm text-muted-foreground">{metric.label}</p>
                   <TrendingUp className="w-4 h-4 text-primary" />
                 </div>
-                <h3 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                <h3 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
                   {metric.value}%
                 </h3>
                 <Progress value={metric.value} className="h-2" />
@@ -128,121 +119,28 @@ const Results = () => {
         </div>
 
         {/* Historial */}
-        <Card className="p-8 border border-border/40 bg-card/40 backdrop-blur-sm shadow-lg">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-xl font-semibold">Historial de Entrenamiento</h2>
-              <p className="text-sm text-muted-foreground">
-                Evolución del loss y accuracy por época
-              </p>
-            </div>
-            <Button variant="outline" size="sm" className="gap-2 hover:bg-primary/10">
-              <Download className="w-4 h-4" />
-              Exportar
-            </Button>
-          </div>
-
-          <div className="overflow-x-auto rounded-lg border border-border/20">
-            <table className="w-full text-sm">
-              <thead className="bg-gradient-to-r from-primary/10 to-accent/10">
-                <tr>
-                  {["Época", "Loss", "Accuracy", "Val Loss", "Val Accuracy"].map((head) => (
-                    <th
-                      key={head}
-                      className="text-left p-3 font-semibold text-foreground"
-                    >
-                      {head}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {trainingHistory.map((row) => (
-                  <tr
-                    key={row.epoch}
-                    className="border-t border-border/30 hover:bg-primary/5 transition-colors"
-                  >
-                    <td className="p-3">{row.epoch}</td>
-                    <td className="p-3 text-muted-foreground">{row.loss.toFixed(3)}</td>
-                    <td className="p-3 text-primary font-semibold">
-                      {row.accuracy.toFixed(1)}%
-                    </td>
-                    <td className="p-3 text-muted-foreground">
-                      {row.valLoss.toFixed(3)}
-                    </td>
-                    <td className="p-3 text-accent font-semibold">
-                      {row.valAccuracy.toFixed(1)}%
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        <Card className="p-8 border border-border/50 bg-gradient-card backdrop-blur-sm shadow-card hover:shadow-card-hover transition-all duration-500">
+...
         </Card>
 
         {/* Matriz de confusión */}
-        <Card className="p-8 border border-border/40 bg-card/40 shadow-md">
-          <h2 className="text-xl font-semibold mb-2">Matriz de Confusión</h2>
-          <p className="text-sm text-muted-foreground mb-6">
-            Comparación entre predicciones y valores reales
-          </p>
-
-          <div className="max-w-md mx-auto grid grid-cols-3 gap-2 text-center">
-            <div></div>
-            <div className="font-semibold text-muted-foreground">Pred: 0</div>
-            <div className="font-semibold text-muted-foreground">Pred: 1</div>
-
-            <div className="font-semibold text-muted-foreground">Real: 0</div>
-            <div className="aspect-square rounded-xl bg-primary/10 border border-primary/50 flex items-center justify-center">
-              <span className="text-lg font-bold text-primary">{confusionMatrix[0][0]}</span>
-            </div>
-            <div className="aspect-square rounded-xl bg-destructive/10 border border-destructive/40 flex items-center justify-center">
-              <span className="text-lg font-bold text-destructive">{confusionMatrix[0][1]}</span>
-            </div>
-
-            <div className="font-semibold text-muted-foreground">Real: 1</div>
-            <div className="aspect-square rounded-xl bg-destructive/10 border border-destructive/40 flex items-center justify-center">
-              <span className="text-lg font-bold text-destructive">{confusionMatrix[1][0]}</span>
-            </div>
-            <div className="aspect-square rounded-xl bg-primary/10 border border-primary/50 flex items-center justify-center">
-              <span className="text-lg font-bold text-primary">{confusionMatrix[1][1]}</span>
-            </div>
-          </div>
+        <Card className="p-8 border border-border/50 bg-gradient-card shadow-card hover:shadow-card-hover transition-all duration-500">
+...
         </Card>
 
         {/* Dataset */}
-        <Card className="p-6 border border-border/40 bg-card/40 shadow-sm">
-          <h3 className="font-semibold mb-4 flex items-center gap-2">
-            <Database className="w-4 h-4 text-primary" /> Dataset Procesado
-          </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-            <div>
-              <p className="text-muted-foreground">Total Samples</p>
-              <p className="font-mono text-foreground">{totalSamples.toLocaleString()}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">Training Set</p>
-              <p className="font-mono text-foreground">{trainingSamples} (80%)</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">Test Set</p>
-              <p className="font-mono text-foreground">{testSamples} (20%)</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">Features</p>
-              <p className="font-mono text-foreground">{selectedColumns.length} columnas</p>
-            </div>
-          </div>
+        <Card className="p-6 border border-border/50 bg-gradient-card shadow-card hover:shadow-card-hover transition-all duration-500">
+...
         </Card>
 
         {/* Botones */}
         <div className="flex justify-between items-center pt-6">
-          <Button variant="outline" onClick={() => navigate("/train")} className="hover:bg-primary/10">
+          <Button variant="outline" onClick={() => navigate("/train")} className="hover:bg-primary/10 hover:border-primary transition-all">
             ← Reentrenar
           </Button>
           <Button
             onClick={() => navigate("/")}
-            className="bg-gradient-to-r from-primary to-accent text-white shadow-md hover:opacity-90 transition-opacity"
+            className="bg-gradient-primary shadow-card hover:opacity-90 hover:shadow-glow transition-all"
           >
             Volver al Dashboard
           </Button>

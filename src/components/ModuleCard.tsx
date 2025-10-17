@@ -22,17 +22,18 @@ export const ModuleCard = ({
   return (
     <Card 
       onClick={() => navigate(route)}
-      className="group relative overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-card-hover shadow-card animate-fade-in bg-gradient-card border-border/50 hover:scale-[1.02]"
+      className="group relative overflow-hidden cursor-pointer transition-all duration-500 hover:shadow-card-hover shadow-card bg-gradient-card border-border/50 hover:scale-[1.03] hover:-translate-y-1"
     >
-      <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-300`} />
+      <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-500`} />
+      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-primary opacity-0 group-hover:opacity-5 blur-3xl transition-opacity duration-500" />
       
-      <div className="relative p-6 space-y-4">
-        <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${gradient} flex items-center justify-center transition-transform duration-300 group-hover:scale-110`}>
-          <Icon className="w-6 h-6 text-primary-foreground" />
+      <div className="relative p-8 space-y-4">
+        <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 shadow-glow`}>
+          <Icon className="w-7 h-7 text-primary-foreground" />
         </div>
         
-        <div className="space-y-2">
-          <h3 className="text-xl font-semibold text-foreground group-hover:text-primary transition-colors">
+        <div className="space-y-3">
+          <h3 className="text-2xl font-bold text-foreground group-hover:bg-gradient-primary group-hover:bg-clip-text group-hover:text-transparent transition-all duration-300">
             {title}
           </h3>
           <p className="text-sm text-muted-foreground leading-relaxed">

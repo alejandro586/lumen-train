@@ -34,19 +34,21 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-foreground relative overflow-hidden">
-      {/* Fondo decorativo */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(99,102,241,0.15),transparent_60%)] blur-3xl"></div>
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,rgba(236,72,153,0.1),transparent_70%)] blur-3xl"></div>
+    <div className="min-h-screen bg-background dark text-foreground relative overflow-hidden">
+      {/* Fondo decorativo artístico */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,hsl(var(--primary)/0.15),transparent_50%)]"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,hsl(var(--accent)/0.15),transparent_50%)]"></div>
+      <div className="absolute top-1/4 left-1/3 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-pulse"></div>
+      <div className="absolute bottom-1/4 right-1/3 w-80 h-80 bg-accent/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
 
       {/* Header */}
-      <header className="border-b border-white/10 bg-white/5 backdrop-blur-md sticky top-0 z-10 shadow-sm">
+      <header className="border-b border-border/50 bg-card/30 backdrop-blur-xl sticky top-0 z-10 shadow-lg">
         <div className="container mx-auto px-6 py-5 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-md">
-            <Database className="w-5 h-5 text-white" />
+          <div className="w-12 h-12 rounded-2xl bg-gradient-primary flex items-center justify-center shadow-glow">
+            <Database className="w-6 h-6 text-primary-foreground" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+            <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               ML Data Pipeline
             </h1>
             <p className="text-sm text-muted-foreground">Sistema de Machine Learning End-to-End</p>
@@ -59,7 +61,7 @@ const Dashboard = () => {
         <div className="space-y-8 animate-fade-in">
           {/* Welcome Section */}
           <div className="text-center space-y-3">
-            <h2 className="text-3xl md:text-4xl font-bold text-white">
+            <h2 className="text-4xl md:text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               Bienvenido a tu Pipeline
             </h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
@@ -72,8 +74,8 @@ const Dashboard = () => {
             {modules.map((module, index) => (
               <div
                 key={module.route}
-                style={{ animationDelay: `${index * 120}ms` }}
-                className="transition-transform transform hover:scale-[1.02] duration-300"
+                style={{ animationDelay: `${index * 100}ms` }}
+                className="animate-fade-in"
               >
                 <ModuleCard {...module} />
               </div>
@@ -81,9 +83,9 @@ const Dashboard = () => {
           </div>
 
           {/* Info Section */}
-          <div className="mt-16 p-8 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
-            <h3 className="text-lg font-semibold mb-3 text-white">
-              🚀 Pipeline Completo
+          <div className="mt-16 p-8 rounded-2xl bg-gradient-card border border-border/50 backdrop-blur-sm shadow-card hover:shadow-card-hover transition-all duration-300">
+            <h3 className="text-lg font-semibold mb-3 text-foreground flex items-center gap-2">
+              <span className="text-2xl">🚀</span> Pipeline Completo
             </h3>
             <p className="text-muted-foreground leading-relaxed">
               Este sistema te permite cargar datos desde múltiples fuentes, limpiarlos y prepararlos,

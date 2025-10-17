@@ -69,9 +69,13 @@ const Train = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background/90 to-primary/10 backdrop-blur-md text-foreground">
+    <div className="min-h-screen bg-background dark text-foreground relative overflow-hidden">
+      {/* Fondo decorativo */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(var(--primary)/0.12),transparent_50%)]"></div>
+      <div className="absolute bottom-20 left-1/4 w-96 h-96 bg-accent/5 rounded-full blur-3xl"></div>
+      
       {/* Header */}
-      <header className="sticky top-0 z-10 border-b border-border/40 bg-card/50 backdrop-blur-lg shadow-sm">
+      <header className="sticky top-0 z-10 border-b border-border/50 bg-card/30 backdrop-blur-xl shadow-lg">
         <div className="container mx-auto px-6 py-5 flex items-center gap-4">
           <Button
             variant="ghost"
@@ -82,12 +86,12 @@ const Train = () => {
             ← Dashboard
           </Button>
 
-          <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-md">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-cyber flex items-center justify-center shadow-glow">
             <Settings className="w-6 h-6 text-primary-foreground" />
           </div>
 
           <div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               Entrenamiento de Modelos
             </h1>
             <p className="text-sm text-muted-foreground">
@@ -98,13 +102,13 @@ const Train = () => {
       </header>
 
       {/* Main */}
-      <main className="container mx-auto px-6 py-12">
+      <main className="container mx-auto px-6 py-12 relative z-10">
         <div className="max-w-5xl mx-auto space-y-10 animate-fade-in">
 
           {/* Framework Selector */}
-          <Card className="p-8 border border-border/50 bg-gradient-to-br from-card via-card/70 to-muted/20 shadow-md hover:shadow-lg transition-all duration-300">
+          <Card className="p-8 border border-border/50 bg-gradient-card shadow-card hover:shadow-card-hover transition-all duration-500">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-inner">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-cyber flex items-center justify-center shadow-glow">
                 <Code2 className="w-6 h-6 text-primary-foreground" />
               </div>
               <div>
@@ -284,30 +288,8 @@ const Train = () => {
           </Card>
 
           {/* Config Summary */}
-          <Card className="p-6 bg-gradient-to-br from-primary/5 to-accent/5 border border-border/40 shadow-inner hover:shadow-lg transition-all">
-            <h3 className="font-semibold mb-4 text-lg">Configuración Actual</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              <div>
-                <p className="text-xs text-muted-foreground">Framework</p>
-                <p className="font-mono text-sm font-medium capitalize">
-                  {framework}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Modelo</p>
-                <p className="font-mono text-sm font-medium">{config.modelType}</p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Test Size</p>
-                <p className="font-mono text-sm font-medium">
-                  {(config.testSize * 100).toFixed(0)}%
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Épocas</p>
-                <p className="font-mono text-sm font-medium">{config.epochs}</p>
-              </div>
-            </div>
+          <Card className="p-6 bg-gradient-card border border-border/50 shadow-card hover:shadow-card-hover transition-all duration-500">
+...
           </Card>
 
           {/* Buttons */}
@@ -315,14 +297,14 @@ const Train = () => {
             <Button
               variant="outline"
               onClick={() => navigate("/clean")}
-              className="hover:bg-muted/20 transition-colors"
+              className="hover:bg-primary/10 hover:border-primary transition-all"
             >
               ← Volver a Limpiar
             </Button>
             <Button
               onClick={handleTrain}
               size="lg"
-              className="gap-2 bg-gradient-to-r from-primary to-accent text-white shadow-md hover:opacity-90 transition-opacity"
+              className="gap-2 bg-gradient-primary shadow-card hover:opacity-90 hover:shadow-glow transition-all"
               disabled={isTraining}
             >
               {isTraining ? "Entrenando..." : (
