@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Settings, ArrowRight, Play, Code2 } from "lucide-react";
+import { Settings, ArrowRight, Play, Code2, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -104,6 +104,39 @@ const Train = () => {
       {/* Main */}
       <main className="container mx-auto px-6 py-12 relative z-10">
         <div className="max-w-5xl mx-auto space-y-10 animate-fade-in">
+
+          {/* Dataset Info */}
+          {csvData && csvColumns && (
+            <Card className="p-6 bg-gradient-card border border-primary/30 shadow-card">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
+                  <FileText className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-foreground">Dataset para Entrenamiento</h3>
+                  <p className="text-sm text-muted-foreground">{csvData?.length.toLocaleString()} muestras × {csvColumns?.filter(c => c.selected).length} features</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="p-3 rounded-lg bg-card/50">
+                  <p className="text-xs text-muted-foreground">Total Filas</p>
+                  <p className="text-lg font-bold text-foreground">{csvData.length.toLocaleString()}</p>
+                </div>
+                <div className="p-3 rounded-lg bg-card/50">
+                  <p className="text-xs text-muted-foreground">Columnas Activas</p>
+                  <p className="text-lg font-bold text-primary">{csvColumns.filter(c => c.selected).length}</p>
+                </div>
+                <div className="p-3 rounded-lg bg-card/50">
+                  <p className="text-xs text-muted-foreground">Set Entrenamiento</p>
+                  <p className="text-lg font-bold text-accent">{Math.floor(csvData.length * 0.8).toLocaleString()}</p>
+                </div>
+                <div className="p-3 rounded-lg bg-card/50">
+                  <p className="text-xs text-muted-foreground">Set Prueba</p>
+                  <p className="text-lg font-bold text-foreground">{(csvData.length - Math.floor(csvData.length * 0.8)).toLocaleString()}</p>
+                </div>
+              </div>
+            </Card>
+          )}
 
           {/* Framework Selector */}
           <Card className="p-8 border border-border/50 bg-gradient-card shadow-card hover:shadow-card-hover transition-all duration-500">

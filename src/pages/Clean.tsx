@@ -104,12 +104,109 @@ const Clean = () => {
 
           {/* Column Selection */}
           <Card className="p-8 bg-gradient-card border border-border/50 shadow-card hover:shadow-card-hover transition-all duration-500">
-...
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold">Selección de Columnas</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Marca las columnas que deseas incluir en el entrenamiento
+                  </p>
+                </div>
+                <Button variant="outline" size="sm" className="gap-2 hover:bg-primary/10">
+                  <Filter className="w-4 h-4" /> Filtrar
+                </Button>
+              </div>
+
+              <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
+                {columns.map((col) => (
+                  <div
+                    key={col.id}
+                    className="flex items-center justify-between p-4 rounded-lg border border-border/50 hover:border-primary/50 bg-card/40 transition-all duration-300 hover:bg-muted/20"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Checkbox
+                        checked={col.selected}
+                        onCheckedChange={() => toggleColumn(col.id)}
+                      />
+                      <div>
+                        <p className="font-medium">{col.name}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Badge variant="outline" className="text-xs">
+                            {col.type}
+                          </Badge>
+                          {col.nulls > 0 && (
+                            <span className="text-xs text-muted-foreground">
+                              {col.nulls} nulos
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <Button variant="ghost" size="sm" className="hover:bg-destructive/10">
+                      <Trash2 className="w-4 h-4 text-destructive" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
           </Card>
 
           {/* Data Preview */}
           <Card className="p-8 bg-gradient-card border border-border/50 shadow-card hover:shadow-card-hover transition-all duration-500">
-...
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold">Vista Previa de Datos - {data.length.toLocaleString()} filas totales</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Mostrando las primeras 15 filas del dataset cargado
+                  </p>
+                </div>
+                <Button variant="outline" size="sm" className="gap-2 hover:bg-accent/10">
+                  <Download className="w-4 h-4" /> Exportar
+                </Button>
+              </div>
+
+              <div className="overflow-x-auto rounded-lg border border-border/40">
+                <table className="w-full text-sm">
+                  <thead className="bg-muted/40 sticky top-0">
+                    <tr className="border-b border-border/30">
+                      <th className="text-left p-3 font-semibold text-muted-foreground">#</th>
+                      {columns.filter((c) => c.selected).map((col) => (
+                        <th key={col.id} className="text-left p-3 font-semibold">
+                          <div className="flex flex-col gap-1">
+                            <span>{col.name}</span>
+                            <Badge variant="outline" className="text-xs w-fit">{col.type}</Badge>
+                          </div>
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.slice(0, 15).map((row, idx) => (
+                      <tr
+                        key={idx}
+                        className="border-b border-border/20 hover:bg-primary/5 transition-colors"
+                      >
+                        <td className="p-3 text-muted-foreground font-semibold">{idx + 1}</td>
+                        {columns.filter((c) => c.selected).map((col) => (
+                          <td key={col.id} className="p-3 font-mono text-foreground">
+                            {row[col.name] ?? (
+                              <span className="text-destructive font-semibold">null</span>
+                            )}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              
+              {data.length > 15 && (
+                <p className="text-sm text-muted-foreground text-center">
+                  ... y {(data.length - 15).toLocaleString()} filas más
+                </p>
+              )}
+            </div>
           </Card>
 
           {/* Buttons */}

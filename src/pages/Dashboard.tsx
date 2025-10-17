@@ -1,7 +1,12 @@
-import { Database, Sparkles, Settings, BarChart3 } from "lucide-react";
+import { Database, Sparkles, Settings, BarChart3, FileText, Columns } from "lucide-react";
 import { ModuleCard } from "@/components/ModuleCard";
+import { useData } from "@/contexts/DataContext";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 const Dashboard = () => {
+  const { csvData, csvColumns, fileName } = useData();
+  
   const modules = [
     {
       title: "Cargar Datos",
@@ -68,6 +73,53 @@ const Dashboard = () => {
               Selecciona un módulo para comenzar tu flujo de trabajo de Machine Learning
             </p>
           </div>
+
+          {/* CSV Info Card */}
+          {csvData && csvColumns && (
+            <Card className="p-6 bg-gradient-card border border-border/50 shadow-card hover:shadow-card-hover transition-all duration-500 animate-fade-in">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-primary flex items-center justify-center shadow-glow flex-shrink-0">
+                  <FileText className="w-6 h-6 text-primary-foreground" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
+                    Dataset Cargado: {fileName}
+                    <Badge variant="outline" className="bg-primary/10">Activo</Badge>
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Total Filas</p>
+                      <p className="text-xl font-bold text-foreground">{csvData.length.toLocaleString()}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Total Columnas</p>
+                      <p className="text-xl font-bold text-primary">{csvColumns.length}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Seleccionadas</p>
+                      <p className="text-xl font-bold text-accent">{csvColumns.filter(c => c.selected).length}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Valores Nulos</p>
+                      <p className="text-xl font-bold text-destructive">{csvColumns.reduce((sum, col) => sum + col.nulls, 0)}</p>
+                    </div>
+                  </div>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {csvColumns.slice(0, 6).map((col) => (
+                      <Badge key={col.id} variant="secondary" className="text-xs">
+                        {col.name} ({col.type})
+                      </Badge>
+                    ))}
+                    {csvColumns.length > 6 && (
+                      <Badge variant="outline" className="text-xs">
+                        +{csvColumns.length - 6} más
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </Card>
+          )}
 
           {/* Module Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
