@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Sparkles, ArrowRight, Trash2, Filter, Download, Columns } from "lucide-react";
+import { Sparkles, ArrowRight, Trash2, Filter, Download, Columns, Search, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -12,6 +12,8 @@ const Clean = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { csvData, csvColumns, setCsvColumns } = useData();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterType, setFilterType] = useState<string>("all");
 
   const [columns, setColumns] = useState(csvColumns || []);
   const [data, setData] = useState(csvData || []);
@@ -43,6 +45,22 @@ const Clean = () => {
     );
     setColumns(newColumns);
     setCsvColumns(newColumns);
+  };
+
+  const filteredColumns = columns.filter((col) => {
+    const matchesSearch = col.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesType = filterType === "all" || col.type === filterType;
+    return matchesSearch && matchesType;
+  });
+
+  const handleResetColumns = () => {
+    const newColumns = columns.map(col => ({ ...col, selected: true }));
+    setColumns(newColumns);
+    setCsvColumns(newColumns);
+    toast({
+      title: "Columnas restablecidas",
+      description: "Todas las columnas han sido seleccionadas nuevamente",
+    });
   };
 
   return (
@@ -105,20 +123,54 @@ const Clean = () => {
           {/* Column Selection */}
           <Card className="p-8 bg-gradient-card border border-border/50 shadow-card hover:shadow-card-hover transition-all duration-500">
             <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-xl font-semibold">Selección de Columnas</h2>
-                  <p className="text-sm text-muted-foreground">
-                    Marca las columnas que deseas incluir en el entrenamiento
-                  </p>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-cyber flex items-center justify-center shadow-glow">
+                    <Filter className="w-6 h-6 text-primary-foreground" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-semibold">Selección de Columnas</h2>
+                    <p className="text-sm text-muted-foreground">
+                      Elige las variables para tu modelo
+                    </p>
+                  </div>
                 </div>
-                <Button variant="outline" size="sm" className="gap-2 hover:bg-primary/10">
-                  <Filter className="w-4 h-4" /> Filtrar
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleResetColumns}
+                  className="gap-2"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  Restablecer
                 </Button>
               </div>
 
+              {/* Search and Filter Bar */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                  <input
+                    placeholder="Buscar columnas..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-10 px-3 py-2 rounded-md bg-card/60 backdrop-blur-sm border border-input text-sm"
+                  />
+                </div>
+                <select
+                  value={filterType}
+                  onChange={(e) => setFilterType(e.target.value)}
+                  className="px-3 py-2 rounded-md bg-card/60 backdrop-blur-sm border border-input text-sm"
+                >
+                  <option value="all">Todos los tipos</option>
+                  <option value="number">Numérico</option>
+                  <option value="string">Texto</option>
+                  <option value="boolean">Booleano</option>
+                </select>
+              </div>
+
               <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
-                {columns.map((col) => (
+                {filteredColumns.map((col) => (
                   <div
                     key={col.id}
                     className="flex items-center justify-between p-4 rounded-lg border border-border/50 hover:border-primary/50 bg-card/40 transition-all duration-300 hover:bg-muted/20"

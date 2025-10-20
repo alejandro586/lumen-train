@@ -1,8 +1,9 @@
-import { Database, Sparkles, Settings, BarChart3, FileText, Columns } from "lucide-react";
+import { Database, Sparkles, Settings, BarChart3, FileText, Columns, Download, BarChart } from "lucide-react";
 import { ModuleCard } from "@/components/ModuleCard";
 import { useData } from "@/contexts/DataContext";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 const Dashboard = () => {
   const { csvData, csvColumns, fileName } = useData();
@@ -75,47 +76,45 @@ const Dashboard = () => {
           </div>
 
           {/* CSV Info Card */}
-          {csvData && csvColumns && (
-            <Card className="p-6 bg-gradient-card border border-border/50 shadow-card hover:shadow-card-hover transition-all duration-500 animate-fade-in">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-primary flex items-center justify-center shadow-glow flex-shrink-0">
-                  <FileText className="w-6 h-6 text-primary-foreground" />
+          {csvData && csvColumns && fileName && (
+            <Card className="p-6 bg-gradient-card border border-primary/30 shadow-card animate-fade-in">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
+                    <FileText className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-foreground">Archivo CSV Cargado</h3>
+                    <p className="text-sm text-muted-foreground">{fileName}</p>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
-                    Dataset Cargado: {fileName}
-                    <Badge variant="outline" className="bg-primary/10">Activo</Badge>
-                  </h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Total Filas</p>
-                      <p className="text-xl font-bold text-foreground">{csvData.length.toLocaleString()}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Total Columnas</p>
-                      <p className="text-xl font-bold text-primary">{csvColumns.length}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Seleccionadas</p>
-                      <p className="text-xl font-bold text-accent">{csvColumns.filter(c => c.selected).length}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Valores Nulos</p>
-                      <p className="text-xl font-bold text-destructive">{csvColumns.reduce((sum, col) => sum + col.nulls, 0)}</p>
-                    </div>
-                  </div>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {csvColumns.slice(0, 6).map((col) => (
-                      <Badge key={col.id} variant="secondary" className="text-xs">
-                        {col.name} ({col.type})
-                      </Badge>
-                    ))}
-                    {csvColumns.length > 6 && (
-                      <Badge variant="outline" className="text-xs">
-                        +{csvColumns.length - 6} más
-                      </Badge>
-                    )}
-                  </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <Download className="w-4 h-4" />
+                    Exportar
+                  </Button>
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <BarChart className="w-4 h-4" />
+                    Analizar
+                  </Button>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="p-3 rounded-lg bg-card/50">
+                  <p className="text-xs text-muted-foreground">Total Filas</p>
+                  <p className="text-lg font-bold text-foreground">{csvData.length.toLocaleString()}</p>
+                </div>
+                <div className="p-3 rounded-lg bg-card/50">
+                  <p className="text-xs text-muted-foreground">Total Columnas</p>
+                  <p className="text-lg font-bold text-primary">{csvColumns.length}</p>
+                </div>
+                <div className="p-3 rounded-lg bg-card/50">
+                  <p className="text-xs text-muted-foreground">Columnas Seleccionadas</p>
+                  <p className="text-lg font-bold text-accent">{csvColumns.filter(c => c.selected).length}</p>
+                </div>
+                <div className="p-3 rounded-lg bg-card/50">
+                  <p className="text-xs text-muted-foreground">Valores Nulos</p>
+                  <p className="text-lg font-bold text-destructive">{csvColumns.reduce((sum, col) => sum + col.nulls, 0).toLocaleString()}</p>
                 </div>
               </div>
             </Card>

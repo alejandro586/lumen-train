@@ -8,6 +8,8 @@ import {
   Database,
   Columns,
   FileText,
+  Share2,
+  RefreshCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -94,20 +96,46 @@ const Results = () => {
       {/* Main */}
       <main className="container mx-auto px-6 py-10 space-y-10 animate-fade-in relative z-10">
         {/* Banner */}
-        <Card className="p-6 border border-primary/30 bg-gradient-card shadow-card hover:shadow-card-hover transition-all duration-500">
-          <div className="flex items-center gap-5">
-            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-md">
-              <CheckCircle2 className="w-7 h-7 text-primary-foreground" />
+        <Card className="p-6 bg-gradient-primary border-none shadow-glow animate-fade-in">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center">
+              <CheckCircle2 className="w-8 h-8 text-white" />
             </div>
             <div className="flex-1">
-              <h3 className="text-lg font-semibold">Entrenamiento Completado ✅</h3>
-              <p className="text-sm text-muted-foreground">
-                Modelo: Random Forest — 100 épocas — {totalSamples.toLocaleString()} muestras — {fileName}
+              <h2 className="text-2xl font-bold text-white mb-1">
+                ¡Entrenamiento Exitoso!
+              </h2>
+              <p className="text-white/80">
+                Tu modelo ha sido entrenado y está listo para usar
               </p>
             </div>
-            <Badge className="bg-primary/90 text-primary-foreground flex items-center gap-1">
-              <Clock className="w-3 h-3" /> 2m 34s
-            </Badge>
+            <div className="flex gap-2">
+              <Button
+                variant="secondary"
+                size="lg"
+                className="gap-2 bg-white/20 hover:bg-white/30 text-white border-white/30"
+              >
+                <Download className="w-5 h-5" />
+                Descargar
+              </Button>
+              <Button
+                variant="secondary"
+                size="lg"
+                className="gap-2 bg-white/20 hover:bg-white/30 text-white border-white/30"
+              >
+                <Share2 className="w-5 h-5" />
+                Compartir
+              </Button>
+              <Button
+                variant="secondary"
+                size="lg"
+                onClick={() => navigate("/train")}
+                className="gap-2 bg-white/20 hover:bg-white/30 text-white border-white/30"
+              >
+                <RefreshCw className="w-5 h-5" />
+                Re-entrenar
+              </Button>
+            </div>
           </div>
         </Card>
 

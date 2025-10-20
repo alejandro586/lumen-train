@@ -19,6 +19,7 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
+import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { useData } from "@/contexts/DataContext";
 
@@ -28,6 +29,7 @@ const Train = () => {
   const { csvData, csvColumns } = useData();
   const [framework, setFramework] = useState("sklearn");
   const [isTraining, setIsTraining] = useState(false);
+  const [trainingProgress, setTrainingProgress] = useState(0);
 
   useEffect(() => {
     if (!csvData || !csvColumns) {
@@ -53,19 +55,37 @@ const Train = () => {
     const selectedColumns = csvColumns?.filter((c) => c.selected) || [];
 
     setIsTraining(true);
+    setTrainingProgress(0);
     toast({
       title: "Entrenamiento iniciado",
       description: `Modelo ${config.modelType} con ${framework} usando ${csvData?.length} filas y ${selectedColumns.length} columnas`,
     });
 
+    // Simular progreso del entrenamiento
+    const duration = 3000; // 3 segundos
+    const interval = 50; // actualizar cada 50ms
+    const steps = duration / interval;
+    const increment = 100 / steps;
+    
+    let currentProgress = 0;
+    const progressInterval = setInterval(() => {
+      currentProgress += increment;
+      if (currentProgress >= 100) {
+        currentProgress = 100;
+        clearInterval(progressInterval);
+      }
+      setTrainingProgress(currentProgress);
+    }, interval);
+
     setTimeout(() => {
       setIsTraining(false);
+      setTrainingProgress(100);
       toast({
         title: "Entrenamiento completado",
         description: "Revisa los resultados",
       });
       navigate("/results");
-    }, 3000);
+    }, duration);
   };
 
   return (
@@ -322,8 +342,45 @@ const Train = () => {
 
           {/* Config Summary */}
           <Card className="p-6 bg-gradient-card border border-border/50 shadow-card hover:shadow-card-hover transition-all duration-500">
-...
+            <h3 className="font-semibold text-lg mb-4 text-foreground">Resumen de Configuración</h3>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="p-3 rounded-lg bg-card/50">
+                <p className="text-muted-foreground">Framework</p>
+                <p className="font-semibold text-foreground capitalize">{framework}</p>
+              </div>
+              <div className="p-3 rounded-lg bg-card/50">
+                <p className="text-muted-foreground">Modelo</p>
+                <p className="font-semibold text-foreground">{config.modelType}</p>
+              </div>
+              <div className="p-3 rounded-lg bg-card/50">
+                <p className="text-muted-foreground">Test Size</p>
+                <p className="font-semibold text-foreground">{config.testSize}</p>
+              </div>
+              <div className="p-3 rounded-lg bg-card/50">
+                <p className="text-muted-foreground">Random State</p>
+                <p className="font-semibold text-foreground">{config.randomState}</p>
+              </div>
+            </div>
           </Card>
+
+          {/* Training Progress */}
+          {isTraining && (
+            <Card className="p-6 bg-gradient-card border border-primary/30 shadow-card animate-fade-in">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold text-lg text-foreground">Entrenamiento en Progreso</h3>
+                  <span className="text-2xl font-bold text-primary">{Math.round(trainingProgress)}%</span>
+                </div>
+                <Progress value={trainingProgress} className="h-3" />
+                <p className="text-sm text-muted-foreground text-center">
+                  {trainingProgress < 30 && "Inicializando modelo..."}
+                  {trainingProgress >= 30 && trainingProgress < 60 && "Procesando datos de entrenamiento..."}
+                  {trainingProgress >= 60 && trainingProgress < 90 && "Ajustando parámetros..."}
+                  {trainingProgress >= 90 && "Finalizando entrenamiento..."}
+                </p>
+              </div>
+            </Card>
+          )}
 
           {/* Buttons */}
           <div className="flex justify-between pt-6">
