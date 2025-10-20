@@ -1,12 +1,57 @@
+import { useState } from "react";
 import { Database, Sparkles, Settings, BarChart3, FileText, Columns, Download, BarChart } from "lucide-react";
 import { ModuleCard } from "@/components/ModuleCard";
 import { useData } from "@/contexts/DataContext";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { AnalysisDialog } from "@/components/AnalysisDialog";
+import { useToast } from "@/hooks/use-toast";
 
 const Dashboard = () => {
   const { csvData, csvColumns, fileName } = useData();
+  const { toast } = useToast();
+  const [showAnalysis, setShowAnalysis] = useState(false);
+
+  const handleExport = () => {
+    if (!csvData || !csvColumns) return;
+
+    // Convertir datos a CSV
+    const headers = csvColumns.map(col => col.name).join(",");
+    const rows = csvData.map(row => 
+      csvColumns.map(col => {
+        const value = row[col.name];
+        // Escapar valores que contienen comas
+        if (value && value.toString().includes(",")) {
+          return `"${value}"`;
+        }
+        return value ?? "";
+      }).join(",")
+    ).join("\n");
+
+    const csvContent = `${headers}\n${rows}`;
+    
+    // Crear blob y descargar
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute("href", url);
+    link.setAttribute("download", fileName || "datos_exportados.csv");
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast({
+      title: "Exportación exitosa",
+      description: `${fileName || "Datos"} exportado correctamente`,
+    });
+  };
+
+  const handleAnalyze = () => {
+    setShowAnalysis(true);
+  };
   
   const modules = [
     {
@@ -89,11 +134,11 @@ const Dashboard = () => {
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" className="gap-2">
+                  <Button variant="outline" size="sm" className="gap-2" onClick={handleExport}>
                     <Download className="w-4 h-4" />
                     Exportar
                   </Button>
-                  <Button variant="outline" size="sm" className="gap-2">
+                  <Button variant="outline" size="sm" className="gap-2" onClick={handleAnalyze}>
                     <BarChart className="w-4 h-4" />
                     Analizar
                   </Button>
@@ -146,6 +191,16 @@ const Dashboard = () => {
           </div>
         </div>
       </main>
+
+      {/* Analysis Dialog */}
+      {csvData && csvColumns && (
+        <AnalysisDialog
+          open={showAnalysis}
+          onOpenChange={setShowAnalysis}
+          data={csvData}
+          columns={csvColumns}
+        />
+      )}
     </div>
   );
 };
