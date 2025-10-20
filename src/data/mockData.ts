@@ -1,0 +1,45 @@
+// Datos simulados predeterminados para el proyecto
+export const mockCsvData = [
+  { id: 1, nombre: "Juan Pérez", edad: 28, salario: 45000, departamento: "Ventas", experiencia: 3.5, activo: "Si" },
+  { id: 2, nombre: "María García", edad: 34, salario: 62000, departamento: "Tecnología", experiencia: 7.2, activo: "Si" },
+  { id: 3, nombre: "Carlos López", edad: 45, salario: 78000, departamento: "Gerencia", experiencia: 15.0, activo: "Si" },
+  { id: 4, nombre: "Ana Martínez", edad: 29, salario: 48000, departamento: "Marketing", experiencia: 4.1, activo: "Si" },
+  { id: 5, nombre: "Pedro Rodríguez", edad: 31, salario: 55000, departamento: "Tecnología", experiencia: 6.0, activo: "No" },
+  { id: 6, nombre: "Laura Sánchez", edad: 26, salario: 42000, departamento: "Ventas", experiencia: 2.8, activo: "Si" },
+  { id: 7, nombre: "Miguel Torres", edad: 38, salario: 68000, departamento: "Recursos Humanos", experiencia: 10.5, activo: "Si" },
+  { id: 8, nombre: "Sofía Ramírez", edad: 33, salario: 59000, departamento: "Marketing", experiencia: 6.5, activo: "Si" },
+  { id: 9, nombre: "Diego Flores", edad: 27, salario: null, departamento: "Ventas", experiencia: 3.0, activo: "Si" },
+  { id: 10, nombre: "Carmen Díaz", edad: 41, salario: 72000, departamento: "Gerencia", experiencia: 12.3, activo: "Si" },
+  { id: 11, nombre: "Roberto Morales", edad: 30, salario: 51000, departamento: "Tecnología", experiencia: 5.2, activo: "Si" },
+  { id: 12, nombre: "Patricia Ruiz", edad: 35, salario: 64000, departamento: "Finanzas", experiencia: 8.7, activo: "Si" },
+  { id: 13, nombre: "Fernando Castro", edad: 29, salario: 47000, departamento: "Marketing", experiencia: null, activo: "No" },
+  { id: 14, nombre: "Lucía Vargas", edad: 32, salario: 56000, departamento: "Recursos Humanos", experiencia: 6.8, activo: "Si" },
+  { id: 15, nombre: "Javier Herrera", edad: 37, salario: 67000, departamento: "Tecnología", experiencia: 9.5, activo: "Si" },
+  { id: 16, nombre: "Isabel Méndez", edad: 28, salario: 44000, departamento: "Ventas", experiencia: 3.2, activo: "Si" },
+  { id: 17, nombre: "Ricardo Ortiz", edad: 44, salario: 76000, departamento: "Gerencia", experiencia: 14.0, activo: "Si" },
+  { id: 18, nombre: "Gabriela Silva", edad: 31, salario: 54000, departamento: "Marketing", experiencia: 5.5, activo: "Si" },
+  { id: 19, nombre: "Andrés Campos", edad: 26, salario: 41000, departamento: "Ventas", experiencia: 2.3, activo: "No" },
+  { id: 20, nombre: "Valentina Rojas", edad: 39, salario: 70000, departamento: "Finanzas", experiencia: 11.2, activo: "Si" },
+  { id: 21, nombre: "Martín Jiménez", edad: 33, salario: 58000, departamento: "Tecnología", experiencia: 7.0, activo: "Si" },
+  { id: 22, nombre: "Daniela Vega", edad: 27, salario: 43000, departamento: "Recursos Humanos", experiencia: 3.5, activo: "Si" },
+  { id: 23, nombre: "Sergio Parra", edad: 36, salario: 65000, departamento: "Marketing", experiencia: 8.3, activo: "Si" },
+  { id: 24, nombre: "Camila Núñez", edad: 30, salario: 52000, departamento: "Ventas", experiencia: 4.8, activo: "Si" },
+  { id: 25, nombre: "Alejandro Peña", edad: 42, salario: 74000, departamento: "Gerencia", experiencia: 13.5, activo: "Si" },
+  { id: 26, nombre: "Natalia Cruz", edad: 29, salario: 49000, departamento: "Tecnología", experiencia: 4.5, activo: "Si" },
+  { id: 27, nombre: "Gonzalo Guzmán", edad: 34, salario: 61000, departamento: "Finanzas", experiencia: 7.8, activo: "Si" },
+  { id: 28, nombre: "Fernanda Reyes", edad: 28, salario: 46000, departamento: "Marketing", experiencia: 3.8, activo: "No" },
+  { id: 29, nombre: "Raúl Mendoza", edad: 40, salario: 71000, departamento: "Gerencia", experiencia: 12.0, activo: "Si" },
+  { id: 30, nombre: "Victoria Molina", edad: 32, salario: 57000, departamento: "Recursos Humanos", experiencia: null, activo: "Si" },
+];
+
+export const mockCsvColumns = [
+  { id: 1, name: "id", type: "int", selected: true, nulls: 0 },
+  { id: 2, name: "nombre", type: "string", selected: true, nulls: 0 },
+  { id: 3, name: "edad", type: "int", selected: true, nulls: 0 },
+  { id: 4, name: "salario", type: "float", selected: true, nulls: 1 },
+  { id: 5, name: "departamento", type: "string", selected: true, nulls: 0 },
+  { id: 6, name: "experiencia", type: "float", selected: true, nulls: 2 },
+  { id: 7, name: "activo", type: "string", selected: true, nulls: 0 },
+];
+
+export const mockFileName = "empleados_ejemplo.csv";

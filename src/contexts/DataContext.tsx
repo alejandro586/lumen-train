@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, ReactNode } from "react";
+import { mockCsvData, mockCsvColumns, mockFileName } from "@/data/mockData";
 
 interface DataContextType {
   csvData: any[] | null;
@@ -12,9 +13,9 @@ interface DataContextType {
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export const DataProvider = ({ children }: { children: ReactNode }) => {
-  const [csvData, setCsvData] = useState<any[] | null>(null);
-  const [csvColumns, setCsvColumns] = useState<Array<{ id: number; name: string; type: string; selected: boolean; nulls: number }> | null>(null);
-  const [fileName, setFileName] = useState<string | null>(null);
+  const [csvData, setCsvData] = useState<any[] | null>(mockCsvData);
+  const [csvColumns, setCsvColumns] = useState<Array<{ id: number; name: string; type: string; selected: boolean; nulls: number }> | null>(mockCsvColumns);
+  const [fileName, setFileName] = useState<string | null>(mockFileName);
 
   return (
     <DataContext.Provider value={{ csvData, csvColumns, setCsvData, setCsvColumns, fileName, setFileName }}>
