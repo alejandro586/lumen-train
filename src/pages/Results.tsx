@@ -114,6 +114,33 @@ const Results = () => {
                 variant="secondary"
                 size="lg"
                 className="gap-2 bg-white/20 hover:bg-white/30 text-white border-white/30"
+                onClick={() => {
+                  const modelData = {
+                    fileName: fileName || "modelo_entrenado",
+                    timestamp: new Date().toISOString(),
+                    metrics,
+                    trainingHistory,
+                    confusionMatrix,
+                    dataset: {
+                      totalSamples,
+                      trainingSamples,
+                      testSamples,
+                      features: selectedColumns.length,
+                      columns: selectedColumns.map(c => c.name)
+                    }
+                  };
+                  const blob = new Blob([JSON.stringify(modelData, null, 2)], { type: 'application/json' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `modelo_${new Date().toISOString().split('T')[0]}.json`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                  toast({
+                    title: "Modelo descargado",
+                    description: "El modelo y sus métricas se han descargado correctamente",
+                  });
+                }}
               >
                 <Download className="w-5 h-5" />
                 Descargar
@@ -122,6 +149,28 @@ const Results = () => {
                 variant="secondary"
                 size="lg"
                 className="gap-2 bg-white/20 hover:bg-white/30 text-white border-white/30"
+                onClick={() => {
+                  const shareText = `¡He entrenado un modelo de ML con ${metrics[0].value}% de precisión! 🚀\n\n` +
+                    `📊 Métricas:\n` +
+                    `- Accuracy: ${metrics[0].value}%\n` +
+                    `- Precision: ${metrics[1].value}%\n` +
+                    `- Recall: ${metrics[2].value}%\n` +
+                    `- F1-Score: ${metrics[3].value}%\n\n` +
+                    `Dataset: ${totalSamples.toLocaleString()} muestras, ${selectedColumns.length} features`;
+                  
+                  navigator.clipboard.writeText(shareText).then(() => {
+                    toast({
+                      title: "¡Copiado al portapapeles!",
+                      description: "Ahora puedes compartir tus resultados en redes sociales",
+                    });
+                  }).catch(() => {
+                    toast({
+                      title: "Error al copiar",
+                      description: "No se pudo copiar al portapapeles",
+                      variant: "destructive",
+                    });
+                  });
+                }}
               >
                 <Share2 className="w-5 h-5" />
                 Compartir
@@ -170,7 +219,29 @@ const Results = () => {
                 Evolución del loss y accuracy por época
               </p>
             </div>
-            <Button variant="outline" size="sm" className="gap-2 hover:bg-primary/10">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="gap-2 hover:bg-primary/10"
+              onClick={() => {
+                const headers = 'Época,Loss,Accuracy,Val Loss,Val Accuracy';
+                const rows = trainingHistory.map(row => 
+                  `${row.epoch},${row.loss.toFixed(3)},${row.accuracy.toFixed(1)},${row.valLoss.toFixed(3)},${row.valAccuracy.toFixed(1)}`
+                ).join('\n');
+                const csv = `${headers}\n${rows}`;
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `historial_entrenamiento_${new Date().toISOString().split('T')[0]}.csv`;
+                a.click();
+                URL.revokeObjectURL(url);
+                toast({
+                  title: "Historial exportado",
+                  description: "Los datos de entrenamiento se han descargado correctamente",
+                });
+              }}
+            >
               <Download className="w-4 h-4" />
               Exportar
             </Button>

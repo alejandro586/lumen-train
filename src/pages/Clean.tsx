@@ -213,7 +213,33 @@ const Clean = () => {
                     Mostrando las primeras 15 filas del dataset cargado
                   </p>
                 </div>
-                <Button variant="outline" size="sm" className="gap-2 hover:bg-accent/10">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="gap-2 hover:bg-accent/10"
+                  onClick={() => {
+                    const selectedCols = columns.filter(c => c.selected);
+                    const headers = selectedCols.map(c => c.name).join(',');
+                    const rows = data.map(row => 
+                      selectedCols.map(col => {
+                        const value = row[col.name];
+                        return value !== null && value !== undefined ? `"${value}"` : '';
+                      }).join(',')
+                    ).join('\n');
+                    const csv = `${headers}\n${rows}`;
+                    const blob = new Blob([csv], { type: 'text/csv' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `datos_limpios_${new Date().toISOString().split('T')[0]}.csv`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    toast({
+                      title: "Datos exportados",
+                      description: `Se han exportado ${data.length} filas con ${selectedCols.length} columnas seleccionadas`,
+                    });
+                  }}
+                >
                   <Download className="w-4 h-4" /> Exportar
                 </Button>
               </div>
