@@ -32,11 +32,26 @@ const Clean = () => {
     }
   }, [csvData, csvColumns, navigate, toast]);
 
+  // Calculate duplicates
+  const getDuplicatesCount = () => {
+    const seen = new Set();
+    let duplicateCount = 0;
+    data.forEach(row => {
+      const rowStr = JSON.stringify(row);
+      if (seen.has(rowStr)) {
+        duplicateCount++;
+      } else {
+        seen.add(rowStr);
+      }
+    });
+    return duplicateCount;
+  };
+
   const stats = {
     totalRows: data.length,
     selectedColumns: columns.filter((c) => c.selected).length,
     totalNulls: columns.reduce((sum, col) => sum + col.nulls, 0),
-    duplicates: 0,
+    duplicates: getDuplicatesCount(),
   };
 
   const toggleColumn = (id: number) => {
@@ -60,6 +75,50 @@ const Clean = () => {
     toast({
       title: "Columnas restablecidas",
       description: "Todas las columnas han sido seleccionadas nuevamente",
+    });
+  };
+
+  const handleReplaceNulls = () => {
+    const cleanedData = data.map(row => {
+      const newRow = { ...row };
+      Object.keys(newRow).forEach(key => {
+        if (newRow[key] === null || newRow[key] === undefined || newRow[key] === '') {
+          newRow[key] = 'n/a';
+        }
+      });
+      return newRow;
+    });
+    
+    // Update null counts in columns
+    const updatedColumns = columns.map(col => ({ ...col, nulls: 0 }));
+    
+    setData(cleanedData);
+    setColumns(updatedColumns);
+    setCsvColumns(updatedColumns);
+    
+    toast({
+      title: "Valores nulos reemplazados",
+      description: "Todos los valores nulos han sido reemplazados por 'n/a'",
+    });
+  };
+
+  const handleRemoveDuplicates = () => {
+    const seen = new Set();
+    const uniqueData = data.filter(row => {
+      const rowStr = JSON.stringify(row);
+      if (seen.has(rowStr)) {
+        return false;
+      }
+      seen.add(rowStr);
+      return true;
+    });
+    
+    const removedCount = data.length - uniqueData.length;
+    setData(uniqueData);
+    
+    toast({
+      title: "Duplicados eliminados",
+      description: `Se eliminaron ${removedCount} filas duplicadas`,
     });
   };
 
@@ -203,6 +262,55 @@ const Clean = () => {
             </div>
           </Card>
 
+          {/* Data Cleaning Actions */}
+          <Card className="p-8 bg-gradient-card border border-border/50 shadow-card hover:shadow-card-hover transition-all duration-500">
+            <div className="space-y-6">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-cyber flex items-center justify-center shadow-glow">
+                  <Sparkles className="w-6 h-6 text-primary-foreground" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold">Limpieza de Datos</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Aplica transformaciones automáticas a tus datos
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Button
+                  variant="outline"
+                  onClick={handleReplaceNulls}
+                  disabled={stats.totalNulls === 0}
+                  className="gap-2 h-auto py-4 flex-col items-start hover:border-primary"
+                >
+                  <div className="flex items-center gap-2 w-full">
+                    <Filter className="w-4 h-4" />
+                    <span className="font-semibold">Reemplazar Valores Nulos</span>
+                  </div>
+                  <span className="text-xs text-muted-foreground">
+                    Convierte {stats.totalNulls} valores nulos en "n/a"
+                  </span>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  onClick={handleRemoveDuplicates}
+                  disabled={stats.duplicates === 0}
+                  className="gap-2 h-auto py-4 flex-col items-start hover:border-primary"
+                >
+                  <div className="flex items-center gap-2 w-full">
+                    <Trash2 className="w-4 h-4" />
+                    <span className="font-semibold">Eliminar Duplicados</span>
+                  </div>
+                  <span className="text-xs text-muted-foreground">
+                    Elimina {stats.duplicates} filas duplicadas
+                  </span>
+                </Button>
+              </div>
+            </div>
+          </Card>
+
           {/* Data Preview */}
           <Card className="p-8 bg-gradient-card border border-border/50 shadow-card hover:shadow-card-hover transition-all duration-500">
             <div className="space-y-6">
@@ -268,8 +376,10 @@ const Clean = () => {
                         <td className="p-3 text-muted-foreground font-semibold">{idx + 1}</td>
                         {columns.filter((c) => c.selected).map((col) => (
                           <td key={col.id} className="p-3 font-mono text-foreground">
-                            {row[col.name] ?? (
-                              <span className="text-destructive font-semibold">null</span>
+                            {row[col.name] === null || row[col.name] === undefined || row[col.name] === '' ? (
+                              <span className="text-muted-foreground italic">n/a</span>
+                            ) : (
+                              row[col.name]
                             )}
                           </td>
                         ))}
