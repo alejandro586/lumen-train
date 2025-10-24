@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Sparkles, ArrowRight, Trash2, Filter, Download, Columns, Search, RefreshCw } from "lucide-react";
+import { Sparkles, ArrowRight, Trash2, Filter, Download, Columns, Search, RefreshCw, Hash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -7,11 +7,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { useData } from "@/contexts/DataContext";
 import { useToast } from "@/hooks/use-toast";
+import { isNumeric } from "@/utils/helpers"; // Asume que tienes una util para chequear numérico
 
 const Clean = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { csvData, csvColumns, setCsvColumns } = useData();
+  const { csvData, csvColumns, setCsvColumns, setCsvData } = useData(); // Agrega setCsvData si no lo tiene
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<string>("all");
 
@@ -29,15 +30,49 @@ const Clean = () => {
     } else {
       setColumns(csvColumns);
       setData(csvData);
+      // Re-inferencia tipos y nulls para manejar parsing malo
+      reInferTypesAndNulls();
     }
   }, [csvData, csvColumns, navigate, toast]);
 
-  // Calculate duplicates
+  // Función para re-inferir tipos y nulls (fix para CSV mal parseado)
+  const reInferTypesAndNulls = () => {
+    const updatedColumns = columns.map(col => {
+      let nullCount = 0;
+      let sampleValues = data.slice(0, 100).map(row => row[col.name]); // Sample para perf
+      const numericCount = sampleValues.filter(val => isNumeric(val)).length;
+      const isNumericCol = numericCount / sampleValues.length > 0.5; // >50% numéricos
+
+      sampleValues.forEach(val => {
+        if (val === null || val === undefined || val === '' || (isNumericCol && !isNumeric(val))) {
+          nullCount++;
+        }
+      });
+
+      return {
+        ...col,
+        type: isNumericCol ? 'number' : 'string',
+        nulls: nullCount,
+      };
+    });
+
+    setColumns(updatedColumns);
+    setCsvColumns(updatedColumns);
+  };
+
+  // Calculate duplicates (mejorado para ignorar nulls)
   const getDuplicatesCount = () => {
     const seen = new Set();
     let duplicateCount = 0;
     data.forEach(row => {
-      const rowStr = JSON.stringify(row);
+      // Limpia row de nulls para comparación
+      const cleanRow = { ...row };
+      Object.keys(cleanRow).forEach(key => {
+        if (cleanRow[key] === null || cleanRow[key] === undefined || cleanRow[key] === '') {
+          cleanRow[key] = '__NULL__';
+        }
+      });
+      const rowStr = JSON.stringify(cleanRow);
       if (seen.has(rowStr)) {
         duplicateCount++;
       } else {
@@ -52,6 +87,7 @@ const Clean = () => {
     selectedColumns: columns.filter((c) => c.selected).length,
     totalNulls: columns.reduce((sum, col) => sum + col.nulls, 0),
     duplicates: getDuplicatesCount(),
+    numericSelected: columns.filter((c) => c.selected && c.type === 'number').length, // Nuevo: cuenta numéricas
   };
 
   const toggleColumn = (id: number) => {
@@ -78,34 +114,50 @@ const Clean = () => {
     });
   };
 
+  // Mejorado: Reemplaza nulls con media para numéricas, 'n/a' para strings
   const handleReplaceNulls = () => {
     const cleanedData = data.map(row => {
       const newRow = { ...row };
       Object.keys(newRow).forEach(key => {
+        const col = columns.find(c => c.name === key);
         if (newRow[key] === null || newRow[key] === undefined || newRow[key] === '') {
-          newRow[key] = 'n/a';
+          if (col?.type === 'number') {
+            // Calcula media rápida del sample
+            const sample = data.slice(0, 100).map(r => r[key]).filter(isNumeric);
+            const mean = sample.length > 0 ? sample.reduce((a, b) => a + b, 0) / sample.length : 0;
+            newRow[key] = mean;
+          } else {
+            newRow[key] = 'n/a';
+          }
         }
       });
       return newRow;
     });
     
-    // Update null counts in columns
+    // Update null counts
     const updatedColumns = columns.map(col => ({ ...col, nulls: 0 }));
     
     setData(cleanedData);
+    setCsvData(cleanedData); // Actualiza context
     setColumns(updatedColumns);
     setCsvColumns(updatedColumns);
     
     toast({
       title: "Valores nulos reemplazados",
-      description: "Todos los valores nulos han sido reemplazados por 'n/a'",
+      description: `Reemplazados ${stats.totalNulls} valores (media para numéricas)`,
     });
   };
 
   const handleRemoveDuplicates = () => {
     const seen = new Set();
     const uniqueData = data.filter(row => {
-      const rowStr = JSON.stringify(row);
+      const cleanRow = { ...row };
+      Object.keys(cleanRow).forEach(key => {
+        if (cleanRow[key] === null || cleanRow[key] === undefined || cleanRow[key] === '') {
+          cleanRow[key] = '__NULL__';
+        }
+      });
+      const rowStr = JSON.stringify(cleanRow);
       if (seen.has(rowStr)) {
         return false;
       }
@@ -115,12 +167,91 @@ const Clean = () => {
     
     const removedCount = data.length - uniqueData.length;
     setData(uniqueData);
+    setCsvData(uniqueData);
     
     toast({
       title: "Duplicados eliminados",
       description: `Se eliminaron ${removedCount} filas duplicadas`,
     });
   };
+
+  // Nuevo: Convierte strings a números para columnas seleccionadas
+  const handleConvertToNumeric = () => {
+    const numericCols = columns.filter(c => c.selected && c.type === 'string');
+    if (numericCols.length === 0) {
+      toast({
+        title: "No hay columnas",
+        description: "Selecciona columnas de texto para convertir a numéricas",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const cleanedData = data.map(row => {
+      const newRow = { ...row };
+      numericCols.forEach(col => {
+        const val = row[col.name];
+        if (isNumeric(val)) {
+          newRow[col.name] = parseFloat(val);
+        }
+      });
+      return newRow;
+    });
+
+    const updatedColumns = columns.map(col => {
+      if (numericCols.some(nc => nc.id === col.id)) {
+        return { ...col, type: 'number' };
+      }
+      return col;
+    });
+
+    setData(cleanedData);
+    setCsvData(cleanedData);
+    setColumns(updatedColumns);
+    setCsvColumns(updatedColumns);
+
+    toast({
+      title: "Columnas convertidas",
+      description: `${numericCols.length} columnas de texto convertidas a numéricas`,
+    });
+  };
+
+  // Nuevo: Filtra rows con valores válidos en columnas numéricas seleccionadas
+  const handleFilterValidRows = () => {
+    const numericSelected = columns.filter(c => c.selected && c.type === 'number');
+    if (numericSelected.length === 0) {
+      toast({
+        title: "No hay columnas numéricas",
+        description: "Selecciona al menos una columna numérica para filtrar",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const filteredData = data.filter(row => {
+      return numericSelected.every(col => isNumeric(row[col.name]));
+    });
+
+    const removedCount = data.length - filteredData.length;
+    setData(filteredData);
+    setCsvData(filteredData);
+
+    toast({
+      title: "Filas filtradas",
+      description: `Eliminadas ${removedCount} filas con valores inválidos en columnas numéricas`,
+    });
+  };
+
+  // Advertencia si <2 numéricas para training
+  useEffect(() => {
+    if (stats.numericSelected < 2) {
+      toast({
+        title: "Advertencia para Entrenamiento",
+        description: `Solo ${stats.numericSelected} columnas numéricas seleccionadas. Necesitas al menos 2 para entrenar un modelo. Usa "Convertir a Numérico" o selecciona más.`,
+        variant: "destructive",
+      });
+    }
+  }, [stats.numericSelected]);
 
   return (
     <div className="min-h-screen bg-background dark text-foreground relative overflow-hidden">
@@ -156,13 +287,14 @@ const Clean = () => {
       {/* Main */}
       <main className="container mx-auto px-6 py-12 animate-fade-in relative z-10">
         <div className="space-y-10 max-w-6xl mx-auto">
-          {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {/* Stats - Agregado numericSelected */}
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-6"> {/* 5 columnas ahora */}
             {[
               { label: "Total Filas", value: stats.totalRows.toLocaleString(), icon: <Columns />, color: "text-foreground" },
               { label: "Columnas Seleccionadas", value: `${stats.selectedColumns}/${columns.length}`, icon: <Filter />, color: "text-primary" },
               { label: "Valores Nulos", value: stats.totalNulls, icon: <Trash2 />, color: "text-accent" },
               { label: "Duplicados", value: stats.duplicates, icon: <Sparkles />, color: "text-destructive" },
+              { label: "Numéricas Sel.", value: stats.numericSelected, icon: <Hash />, color: stats.numericSelected >= 2 ? "text-green-600" : "text-yellow-600" }, // Nuevo
             ].map((item, idx) => (
               <Card
                 key={idx}
@@ -262,7 +394,7 @@ const Clean = () => {
             </div>
           </Card>
 
-          {/* Data Cleaning Actions */}
+          {/* Data Cleaning Actions - Agregados nuevos botones */}
           <Card className="p-8 bg-gradient-card border border-border/50 shadow-card hover:shadow-card-hover transition-all duration-500">
             <div className="space-y-6">
               <div className="flex items-center gap-3">
@@ -289,7 +421,7 @@ const Clean = () => {
                     <span className="font-semibold">Reemplazar Valores Nulos</span>
                   </div>
                   <span className="text-xs text-muted-foreground">
-                    Convierte {stats.totalNulls} valores nulos en "n/a"
+                    {stats.totalNulls} valores (media para numéricas)
                   </span>
                 </Button>
 
@@ -304,7 +436,39 @@ const Clean = () => {
                     <span className="font-semibold">Eliminar Duplicados</span>
                   </div>
                   <span className="text-xs text-muted-foreground">
-                    Elimina {stats.duplicates} filas duplicadas
+                    {stats.duplicates} filas duplicadas
+                  </span>
+                </Button>
+
+                {/* Nuevo botón */}
+                <Button
+                  variant="outline"
+                  onClick={handleConvertToNumeric}
+                  disabled={columns.filter(c => c.selected && c.type === 'string').length === 0}
+                  className="gap-2 h-auto py-4 flex-col items-start hover:border-primary"
+                >
+                  <div className="flex items-center gap-2 w-full">
+                    <Hash className="w-4 h-4" />
+                    <span className="font-semibold">Convertir a Numérico</span>
+                  </div>
+                  <span className="text-xs text-muted-foreground">
+                    Columnas de texto a números
+                  </span>
+                </Button>
+
+                {/* Nuevo botón */}
+                <Button
+                  variant="outline"
+                  onClick={handleFilterValidRows}
+                  disabled={stats.numericSelected === 0}
+                  className="gap-2 h-auto py-4 flex-col items-start hover:border-primary"
+                >
+                  <div className="flex items-center gap-2 w-full">
+                    <Filter className="w-4 h-4" />
+                    <span className="font-semibold">Filtrar Filas Válidas</span>
+                  </div>
+                  <span className="text-xs text-muted-foreground">
+                    Solo rows con valores numéricos válidos
                   </span>
                 </Button>
               </div>
@@ -409,7 +573,8 @@ const Clean = () => {
             <Button
               onClick={() => navigate("/train")}
               size="lg"
-              className="gap-2 bg-gradient-primary hover:opacity-90 hover:shadow-glow transition-all shadow-card"
+              className="gap-2 bg-gradient-primary hover:opacity-90 hover:shadow-glow transition-all shadow-card disabled:opacity-50"
+              disabled={stats.numericSelected < 2} // Deshabilita si <2 numéricas
             >
               Continuar a Entrenar
               <ArrowRight className="w-4 h-4" />
@@ -419,6 +584,12 @@ const Clean = () => {
       </main>
     </div>
   );
+};
+
+// Util helper (agrega en @/utils/helpers.ts si no existe)
+export const isNumeric = (val: any): boolean => {
+  if (val === null || val === undefined || val === '') return false;
+  return !isNaN(parseFloat(val)) && isFinite(val);
 };
 
 export default Clean;
