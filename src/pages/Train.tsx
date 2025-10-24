@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Settings, ArrowRight, Play, Code2, FileText } from "lucide-react";
+import { Settings, ArrowRight, Play, Code2, FileText, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -22,6 +22,7 @@ import { Slider } from "@/components/ui/slider";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { useData } from "@/contexts/DataContext";
+import { trainModel, type TrainingResults } from "@/utils/mlTraining";
 
 const Train = () => {
   const navigate = useNavigate();
@@ -30,6 +31,9 @@ const Train = () => {
   const [framework, setFramework] = useState("sklearn");
   const [isTraining, setIsTraining] = useState(false);
   const [trainingProgress, setTrainingProgress] = useState(0);
+  const [currentEpoch, setCurrentEpoch] = useState(0);
+  const [currentLoss, setCurrentLoss] = useState<number | null>(null);
+  const [trainingResults, setTrainingResults] = useState<TrainingResults | null>(null);
 
   useEffect(() => {
     if (!csvData || !csvColumns) {
@@ -51,41 +55,66 @@ const Train = () => {
     learningRate: 0.001,
   });
 
-  const handleTrain = () => {
+  const handleTrain = async () => {
     const selectedColumns = csvColumns?.filter((c) => c.selected) || [];
+
+    if (!csvData || selectedColumns.length < 2) {
+      toast({
+        title: "Error",
+        description: "Se necesitan al menos 2 columnas numéricas seleccionadas",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setIsTraining(true);
     setTrainingProgress(0);
+    setCurrentEpoch(0);
+    setCurrentLoss(null);
+    setTrainingResults(null);
+
     toast({
-      title: "Entrenamiento iniciado",
+      title: "🚀 Entrenamiento real iniciado",
       description: `Modelo ${config.modelType} con ${framework} usando ${csvData?.length} filas y ${selectedColumns.length} columnas`,
     });
 
-    // Simular progreso del entrenamiento
-    const duration = 3000; // 3 segundos
-    const interval = 50; // actualizar cada 50ms
-    const steps = duration / interval;
-    const increment = 100 / steps;
-    
-    let currentProgress = 0;
-    const progressInterval = setInterval(() => {
-      currentProgress += increment;
-      if (currentProgress >= 100) {
-        currentProgress = 100;
-        clearInterval(progressInterval);
-      }
-      setTrainingProgress(currentProgress);
-    }, interval);
-
-    setTimeout(() => {
-      setIsTraining(false);
-      setTrainingProgress(100);
+    try {
+      const results = await trainModel(
+        csvData,
+        selectedColumns,
+        {
+          ...config,
+          framework
+        },
+        {
+          onProgress: (progress) => {
+            setTrainingProgress(progress);
+          },
+          onEpochEnd: (epoch, logs) => {
+            setCurrentEpoch(epoch + 1);
+            setCurrentLoss(logs?.loss);
+          },
+          onComplete: (results) => {
+            setTrainingResults(results);
+            toast({
+              title: "✅ Entrenamiento completado",
+              description: `Precisión: ${results.accuracy.toFixed(2)}% - Tiempo: ${results.trainTime.toFixed(2)}s`,
+            });
+            setTimeout(() => {
+              navigate("/results");
+            }, 2000);
+          }
+        }
+      );
+    } catch (error) {
+      console.error('Error en entrenamiento:', error);
       toast({
-        title: "Entrenamiento completado",
-        description: "Revisa los resultados",
+        title: "❌ Error en entrenamiento",
+        description: error instanceof Error ? error.message : "Error desconocido",
+        variant: "destructive",
       });
-      navigate("/results");
-    }, duration);
+      setIsTraining(false);
+    }
   };
 
   return (
@@ -368,16 +397,67 @@ const Train = () => {
             <Card className="p-6 bg-gradient-card border border-primary/30 shadow-card animate-fade-in">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-lg text-foreground">Entrenamiento en Progreso</h3>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center animate-pulse">
+                      <Zap className="w-5 h-5 text-primary" />
+                    </div>
+                    <h3 className="font-semibold text-lg text-foreground">Entrenamiento Real en Progreso</h3>
+                  </div>
                   <span className="text-2xl font-bold text-primary">{Math.round(trainingProgress)}%</span>
                 </div>
+                
                 <Progress value={trainingProgress} className="h-3" />
-                <p className="text-sm text-muted-foreground text-center">
-                  {trainingProgress < 30 && "Inicializando modelo..."}
-                  {trainingProgress >= 30 && trainingProgress < 60 && "Procesando datos de entrenamiento..."}
-                  {trainingProgress >= 60 && trainingProgress < 90 && "Ajustando parámetros..."}
-                  {trainingProgress >= 90 && "Finalizando entrenamiento..."}
+                
+                <div className="grid grid-cols-3 gap-4 mt-4">
+                  <div className="p-3 rounded-lg bg-card/50">
+                    <p className="text-xs text-muted-foreground">Época Actual</p>
+                    <p className="text-lg font-bold text-primary">{currentEpoch}/{config.epochs}</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-card/50">
+                    <p className="text-xs text-muted-foreground">Loss</p>
+                    <p className="text-lg font-bold text-foreground">
+                      {currentLoss !== null ? currentLoss.toFixed(4) : '---'}
+                    </p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-card/50">
+                    <p className="text-xs text-muted-foreground">Framework</p>
+                    <p className="text-lg font-bold text-accent capitalize">{framework}</p>
+                  </div>
+                </div>
+
+                <p className="text-sm text-muted-foreground text-center pt-2">
+                  <span className="inline-flex items-center gap-2">
+                    <Zap className="w-4 h-4 text-primary animate-pulse" />
+                    Entrenamiento real con TensorFlow.js
+                  </span>
                 </p>
+              </div>
+            </Card>
+          )}
+
+          {/* Training Results */}
+          {trainingResults && !isTraining && (
+            <Card className="p-6 bg-gradient-card border border-green-500/30 shadow-card animate-fade-in">
+              <div className="space-y-4">
+                <h3 className="font-semibold text-lg text-foreground">✅ Resultados del Entrenamiento</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="p-3 rounded-lg bg-card/50">
+                    <p className="text-xs text-muted-foreground">Precisión</p>
+                    <p className="text-lg font-bold text-green-500">{trainingResults.accuracy.toFixed(2)}%</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-card/50">
+                    <p className="text-xs text-muted-foreground">Loss Final</p>
+                    <p className="text-lg font-bold text-foreground">{trainingResults.loss.toFixed(4)}</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-card/50">
+                    <p className="text-xs text-muted-foreground">Épocas</p>
+                    <p className="text-lg font-bold text-primary">{trainingResults.epochs}</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-card/50">
+                    <p className="text-xs text-muted-foreground">Tiempo</p>
+                    <p className="text-lg font-bold text-accent">{trainingResults.trainTime.toFixed(2)}s</p>
+                  </div>
+                </div>
               </div>
             </Card>
           )}
