@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Sparkles, ArrowRight, Trash2, Filter, Download, Columns, Search, RefreshCw, Hash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -7,14 +7,16 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { useData } from "@/contexts/DataContext";
 import { useToast } from "@/hooks/use-toast";
-import { isNumeric } from "@/utils/helpers"; // Asume que tienes una util para chequear numérico
+import { debounce } from "lodash"; // Instala lodash si no lo tienes: npm i lodash @types/lodash
+import { isNumeric } from "@/utils/helpers"; // Asume que tienes esta util
 
 const Clean = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { csvData, csvColumns, setCsvColumns, setCsvData } = useData(); // Agrega setCsvData si no lo tiene
+  const { csvData, csvColumns, setCsvColumns, setCsvData } = useData(); // Agrega setCsvData si no lo tiene en context
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<string>("all");
+  const [isLoading, setIsLoading] = useState(true); // Loading state para optimización
 
   const [columns, setColumns] = useState(csvColumns || []);
   const [data, setData] = useState(csvData || []);
@@ -27,21 +29,26 @@ const Clean = () => {
         variant: "destructive",
       });
       navigate("/upload");
-    } else {
-      setColumns(csvColumns);
-      setData(csvData);
-      // Re-inferencia tipos y nulls para manejar parsing malo
-      reInferTypesAndNulls();
+      return;
     }
+    setColumns(csvColumns);
+    setData(csvData);
+    setIsLoading(false);
+    // Lazy infer: Solo después de 500ms para no bloquear render inicial
+    const timer = setTimeout(() => reInferTypesAndNulls(), 500);
+    return () => clearTimeout(timer);
   }, [csvData, csvColumns, navigate, toast]);
 
-  // Función para re-inferir tipos y nulls (fix para CSV mal parseado)
-  const reInferTypesAndNulls = () => {
+  // Re-inferencia optimizada: Muestreo 50 rows, solo columnas no inferidas
+  const reInferTypesAndNulls = useCallback(() => {
+    setIsLoading(true);
     const updatedColumns = columns.map(col => {
+      if (col.type !== 'unknown') return col; // Skip si ya inferido
       let nullCount = 0;
-      let sampleValues = data.slice(0, 100).map(row => row[col.name]); // Sample para perf
+      const sampleSize = 50; // Reducido para velocidad
+      const sampleValues = data.slice(0, sampleSize).map(row => row[col.name]);
       const numericCount = sampleValues.filter(val => isNumeric(val)).length;
-      const isNumericCol = numericCount / sampleValues.length > 0.5; // >50% numéricos
+      const isNumericCol = numericCount / sampleValues.length > 0.5;
 
       sampleValues.forEach(val => {
         if (val === null || val === undefined || val === '' || (isNumericCol && !isNumeric(val))) {
@@ -52,20 +59,24 @@ const Clean = () => {
       return {
         ...col,
         type: isNumericCol ? 'number' : 'string',
-        nulls: nullCount,
+        nulls: nullCount * (data.length / sampleSize), // Extrapola para estimar total
       };
     });
 
     setColumns(updatedColumns);
     setCsvColumns(updatedColumns);
-  };
+    setIsLoading(false);
+  }, [columns, data, setCsvColumns]);
 
-  // Calculate duplicates (mejorado para ignorar nulls)
-  const getDuplicatesCount = () => {
+  // Debounce para search (evita re-renders excesivos)
+  const debouncedSearch = useMemo(() => debounce((term: string) => setSearchTerm(term), 300), []);
+
+  // Duplicados memoizado y limitado
+  const getDuplicatesCount = useMemo(() => {
+    if (data.length > 1000) return 'N/A (dataset grande)'; // Skip cálculo pesado
     const seen = new Set();
     let duplicateCount = 0;
-    data.forEach(row => {
-      // Limpia row de nulls para comparación
+    data.slice(0, 1000).forEach(row => { // Limit a 1000 para perf
       const cleanRow = { ...row };
       Object.keys(cleanRow).forEach(key => {
         if (cleanRow[key] === null || cleanRow[key] === undefined || cleanRow[key] === '') {
@@ -73,38 +84,35 @@ const Clean = () => {
         }
       });
       const rowStr = JSON.stringify(cleanRow);
-      if (seen.has(rowStr)) {
-        duplicateCount++;
-      } else {
-        seen.add(rowStr);
-      }
+      if (seen.has(rowStr)) duplicateCount++;
+      else seen.add(rowStr);
     });
     return duplicateCount;
-  };
+  }, [data]);
 
-  const stats = {
+  const stats = useMemo(() => ({
     totalRows: data.length,
     selectedColumns: columns.filter((c) => c.selected).length,
     totalNulls: columns.reduce((sum, col) => sum + col.nulls, 0),
     duplicates: getDuplicatesCount(),
-    numericSelected: columns.filter((c) => c.selected && c.type === 'number').length, // Nuevo: cuenta numéricas
-  };
+    numericSelected: columns.filter((c) => c.selected && c.type === 'number').length,
+  }), [columns, data, getDuplicatesCount]);
 
-  const toggleColumn = (id: number) => {
+  const toggleColumn = useCallback((id: number) => {
     const newColumns = columns.map((col) =>
       col.id === id ? { ...col, selected: !col.selected } : col
     );
     setColumns(newColumns);
     setCsvColumns(newColumns);
-  };
+  }, [columns, setCsvColumns]);
 
-  const filteredColumns = columns.filter((col) => {
+  const filteredColumns = useMemo(() => columns.filter((col) => {
     const matchesSearch = col.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = filterType === "all" || col.type === filterType;
     return matchesSearch && matchesType;
-  });
+  }), [columns, searchTerm, filterType]);
 
-  const handleResetColumns = () => {
+  const handleResetColumns = useCallback(() => {
     const newColumns = columns.map(col => ({ ...col, selected: true }));
     setColumns(newColumns);
     setCsvColumns(newColumns);
@@ -112,17 +120,16 @@ const Clean = () => {
       title: "Columnas restablecidas",
       description: "Todas las columnas han sido seleccionadas nuevamente",
     });
-  };
+  }, [columns, setCsvColumns, toast]);
 
-  // Mejorado: Reemplaza nulls con media para numéricas, 'n/a' para strings
-  const handleReplaceNulls = () => {
+  // Reemplazo de nulls optimizado (useCallback)
+  const handleReplaceNulls = useCallback(() => {
     const cleanedData = data.map(row => {
       const newRow = { ...row };
       Object.keys(newRow).forEach(key => {
         const col = columns.find(c => c.name === key);
         if (newRow[key] === null || newRow[key] === undefined || newRow[key] === '') {
           if (col?.type === 'number') {
-            // Calcula media rápida del sample
             const sample = data.slice(0, 100).map(r => r[key]).filter(isNumeric);
             const mean = sample.length > 0 ? sample.reduce((a, b) => a + b, 0) / sample.length : 0;
             newRow[key] = mean;
@@ -134,11 +141,10 @@ const Clean = () => {
       return newRow;
     });
     
-    // Update null counts
     const updatedColumns = columns.map(col => ({ ...col, nulls: 0 }));
     
     setData(cleanedData);
-    setCsvData(cleanedData); // Actualiza context
+    setCsvData(cleanedData);
     setColumns(updatedColumns);
     setCsvColumns(updatedColumns);
     
@@ -146,9 +152,9 @@ const Clean = () => {
       title: "Valores nulos reemplazados",
       description: `Reemplazados ${stats.totalNulls} valores (media para numéricas)`,
     });
-  };
+  }, [data, columns, stats.totalNulls, setCsvData, setCsvColumns, toast]);
 
-  const handleRemoveDuplicates = () => {
+  const handleRemoveDuplicates = useCallback(() => {
     const seen = new Set();
     const uniqueData = data.filter(row => {
       const cleanRow = { ...row };
@@ -158,9 +164,7 @@ const Clean = () => {
         }
       });
       const rowStr = JSON.stringify(cleanRow);
-      if (seen.has(rowStr)) {
-        return false;
-      }
+      if (seen.has(rowStr)) return false;
       seen.add(rowStr);
       return true;
     });
@@ -173,10 +177,10 @@ const Clean = () => {
       title: "Duplicados eliminados",
       description: `Se eliminaron ${removedCount} filas duplicadas`,
     });
-  };
+  }, [data, setCsvData, toast]);
 
-  // Nuevo: Convierte strings a números para columnas seleccionadas
-  const handleConvertToNumeric = () => {
+  // Convertir a numérico
+  const handleConvertToNumeric = useCallback(() => {
     const numericCols = columns.filter(c => c.selected && c.type === 'string');
     if (numericCols.length === 0) {
       toast({
@@ -214,10 +218,10 @@ const Clean = () => {
       title: "Columnas convertidas",
       description: `${numericCols.length} columnas de texto convertidas a numéricas`,
     });
-  };
+  }, [columns, data, setCsvData, setCsvColumns, toast]);
 
-  // Nuevo: Filtra rows con valores válidos en columnas numéricas seleccionadas
-  const handleFilterValidRows = () => {
+  // Filtrar filas válidas
+  const handleFilterValidRows = useCallback(() => {
     const numericSelected = columns.filter(c => c.selected && c.type === 'number');
     if (numericSelected.length === 0) {
       toast({
@@ -240,9 +244,9 @@ const Clean = () => {
       title: "Filas filtradas",
       description: `Eliminadas ${removedCount} filas con valores inválidos en columnas numéricas`,
     });
-  };
+  }, [columns, data, setCsvData, toast]);
 
-  // Advertencia si <2 numéricas para training
+  // Advertencia si <2 numéricas
   useEffect(() => {
     if (stats.numericSelected < 2) {
       toast({
@@ -251,11 +255,25 @@ const Clean = () => {
         variant: "destructive",
       });
     }
-  }, [stats.numericSelected]);
+  }, [stats.numericSelected, toast]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4 text-primary" />
+          <p className="text-lg">Optimizando datos para carga rápida...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Preview optimizado: Muestra menos si grande
+  const previewRows = data.slice(0, data.length > 1000 ? 10 : 15);
 
   return (
     <div className="min-h-screen bg-background dark text-foreground relative overflow-hidden">
-      {/* Fondo decorativo */}
+      {/* Fondo decorativo - Simplificado */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.12),transparent_60%)]"></div>
       <div className="absolute top-40 left-20 w-96 h-96 bg-accent/5 rounded-full blur-3xl"></div>
       
@@ -287,14 +305,14 @@ const Clean = () => {
       {/* Main */}
       <main className="container mx-auto px-6 py-12 animate-fade-in relative z-10">
         <div className="space-y-10 max-w-6xl mx-auto">
-          {/* Stats - Agregado numericSelected */}
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-6"> {/* 5 columnas ahora */}
+          {/* Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
             {[
               { label: "Total Filas", value: stats.totalRows.toLocaleString(), icon: <Columns />, color: "text-foreground" },
               { label: "Columnas Seleccionadas", value: `${stats.selectedColumns}/${columns.length}`, icon: <Filter />, color: "text-primary" },
               { label: "Valores Nulos", value: stats.totalNulls, icon: <Trash2 />, color: "text-accent" },
               { label: "Duplicados", value: stats.duplicates, icon: <Sparkles />, color: "text-destructive" },
-              { label: "Numéricas Sel.", value: stats.numericSelected, icon: <Hash />, color: stats.numericSelected >= 2 ? "text-green-600" : "text-yellow-600" }, // Nuevo
+              { label: "Numéricas Sel.", value: stats.numericSelected, icon: <Hash />, color: stats.numericSelected >= 2 ? "text-green-600" : "text-yellow-600" },
             ].map((item, idx) => (
               <Card
                 key={idx}
@@ -343,8 +361,7 @@ const Clean = () => {
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                   <input
                     placeholder="Buscar columnas..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={(e) => debouncedSearch(e.target.value)}
                     className="w-full pl-10 px-3 py-2 rounded-md bg-card/60 backdrop-blur-sm border border-input text-sm"
                   />
                 </div>
@@ -394,7 +411,7 @@ const Clean = () => {
             </div>
           </Card>
 
-          {/* Data Cleaning Actions - Agregados nuevos botones */}
+          {/* Data Cleaning Actions */}
           <Card className="p-8 bg-gradient-card border border-border/50 shadow-card hover:shadow-card-hover transition-all duration-500">
             <div className="space-y-6">
               <div className="flex items-center gap-3">
@@ -428,7 +445,7 @@ const Clean = () => {
                 <Button
                   variant="outline"
                   onClick={handleRemoveDuplicates}
-                  disabled={stats.duplicates === 0}
+                  disabled={typeof stats.duplicates === 'string' || stats.duplicates === 0}
                   className="gap-2 h-auto py-4 flex-col items-start hover:border-primary"
                 >
                   <div className="flex items-center gap-2 w-full">
@@ -440,7 +457,6 @@ const Clean = () => {
                   </span>
                 </Button>
 
-                {/* Nuevo botón */}
                 <Button
                   variant="outline"
                   onClick={handleConvertToNumeric}
@@ -456,7 +472,6 @@ const Clean = () => {
                   </span>
                 </Button>
 
-                {/* Nuevo botón */}
                 <Button
                   variant="outline"
                   onClick={handleFilterValidRows}
@@ -482,7 +497,7 @@ const Clean = () => {
                 <div>
                   <h2 className="text-xl font-semibold">Vista Previa de Datos - {data.length.toLocaleString()} filas totales</h2>
                   <p className="text-sm text-muted-foreground">
-                    Mostrando las primeras 15 filas del dataset cargado
+                    Mostrando las primeras {previewRows.length} filas del dataset cargado
                   </p>
                 </div>
                 <Button 
@@ -532,7 +547,7 @@ const Clean = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {data.slice(0, 15).map((row, idx) => (
+                    {previewRows.map((row, idx) => (
                       <tr
                         key={idx}
                         className="border-b border-border/20 hover:bg-primary/5 transition-colors"
@@ -553,9 +568,9 @@ const Clean = () => {
                 </table>
               </div>
               
-              {data.length > 15 && (
+              {data.length > previewRows.length && (
                 <p className="text-sm text-muted-foreground text-center">
-                  ... y {(data.length - 15).toLocaleString()} filas más
+                  ... y {(data.length - previewRows.length).toLocaleString()} filas más
                 </p>
               )}
             </div>
@@ -574,7 +589,7 @@ const Clean = () => {
               onClick={() => navigate("/train")}
               size="lg"
               className="gap-2 bg-gradient-primary hover:opacity-90 hover:shadow-glow transition-all shadow-card disabled:opacity-50"
-              disabled={stats.numericSelected < 2} // Deshabilita si <2 numéricas
+              disabled={stats.numericSelected < 2}
             >
               Continuar a Entrenar
               <ArrowRight className="w-4 h-4" />
@@ -589,7 +604,7 @@ const Clean = () => {
 // Util helper (agrega en @/utils/helpers.ts si no existe)
 export const isNumeric = (val: any): boolean => {
   if (val === null || val === undefined || val === '') return false;
-  return !isNaN(parseFloat(val)) && isFinite(val);
+  return !isNaN(parseFloat(val as string)) && isFinite(val as number);
 };
 
 export default Clean;
