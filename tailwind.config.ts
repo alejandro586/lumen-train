@@ -107,22 +107,75 @@ export default {
           "50%": {
             backgroundPosition: "100% 50%"
           }
+        },
+        "pulse-glow": {
+          "0%, 100%": {
+            opacity: "1",
+            boxShadow: "0 0 20px hsl(var(--primary) / 0.4)"
+          },
+          "50%": {
+            opacity: "0.8",
+            boxShadow: "0 0 40px hsl(var(--primary) / 0.6)"
+          }
+        },
+        "float": {
+          "0%, 100%": {
+            transform: "translateY(0px)"
+          },
+          "50%": {
+            transform: "translateY(-10px)"
+          }
+        },
+        "slide-up": {
+          "0%": {
+            transform: "translateY(20px)",
+            opacity: "0"
+          },
+          "100%": {
+            transform: "translateY(0)",
+            opacity: "1"
+          }
+        },
+        "neon-pulse": {
+          "0%, 100%": {
+            boxShadow: "0 0 5px hsl(var(--primary)), 0 0 10px hsl(var(--primary)), 0 0 20px hsl(var(--primary))"
+          },
+          "50%": {
+            boxShadow: "0 0 10px hsl(var(--primary)), 0 0 20px hsl(var(--primary)), 0 0 40px hsl(var(--primary))"
+          }
         }
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "fade-in": "fade-in 0.3s ease-out",
-        "scale-in": "scale-in 0.2s ease-out",
-        "gradient-shift": "gradient-shift 3s ease infinite",
+        "fade-in": "fade-in 0.5s ease-out",
+        "scale-in": "scale-in 0.3s ease-out",
+        "gradient-shift": "gradient-shift 4s ease infinite",
+        "pulse-glow": "pulse-glow 2s ease-in-out infinite",
+        "float": "float 3s ease-in-out infinite",
+        "slide-up": "slide-up 0.5s ease-out",
+        "neon-pulse": "neon-pulse 1.5s ease-in-out infinite",
       },
       backgroundImage: {
         "gradient-primary": "var(--gradient-primary)",
+        "gradient-cyber": "var(--gradient-cyber)",
+        "gradient-neon": "var(--gradient-neon)",
+        "gradient-fire": "var(--gradient-fire)",
+        "gradient-ice": "var(--gradient-ice)",
+        "gradient-forest": "var(--gradient-forest)",
         "gradient-card": "var(--gradient-card)",
+        "gradient-card-hover": "var(--gradient-card-hover)",
+        "gradient-glow": "var(--gradient-glow)",
       },
       boxShadow: {
+        "glow": "var(--shadow-glow)",
+        "glow-lg": "var(--shadow-glow-lg)",
+        "neon": "var(--shadow-neon)",
         "card": "var(--shadow-card)",
         "card-hover": "var(--shadow-card-hover)",
+      },
+      backgroundSize: {
+        "300%": "300%",
       },
     },
   },
