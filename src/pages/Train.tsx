@@ -48,6 +48,10 @@ const Train = () => {
 
   const [config, setConfig] = useState({
     modelType: "random_forest",
+    architecture: "feedforward", // Para PyTorch
+    tfModel: "sequential", // Para TensorFlow
+    optimizer: "adam", // Para TensorFlow
+    validationSplit: 0.2, // Para TensorFlow
     testSize: 0.2,
     randomState: 42,
     epochs: 100,
@@ -58,10 +62,10 @@ const Train = () => {
   const handleTrain = async () => {
     const selectedColumns = csvColumns?.filter((c) => c.selected) || [];
 
-    if (!csvData || csvData.length === 0 || selectedColumns.length === 0) {
+    if (!csvData || csvData.length === 0 || selectedColumns.length < 2) { // Al menos 1 feature + 1 target
       toast({
         title: "Datos insuficientes",
-        description: "Los datos no se pueden procesar o entrenar por motivos de falta de datos",
+        description: "Selecciona al menos 1 feature y 1 target column para entrenar",
         variant: "destructive",
       });
       return;
@@ -118,7 +122,7 @@ const Train = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background dark text-foreground relative overflow-hidden">
+    <div className="min-h-screen bg-background dark text-foreground relative overflow-x-hidden">
       {/* Fondo decorativo futurista */}
       <div className="absolute inset-0 bg-gradient-glow opacity-30"></div>
       <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-cyber opacity-20 rounded-full blur-3xl animate-pulse-glow"></div>
@@ -267,7 +271,10 @@ const Train = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label>Arquitectura</Label>
-                    <Select defaultValue="feedforward">
+                    <Select
+                      value={config.architecture}
+                      onValueChange={(v) => setConfig({ ...config, architecture: v })}
+                    >
                       <SelectTrigger className="bg-card/60 backdrop-blur-sm">
                         <SelectValue />
                       </SelectTrigger>
@@ -324,7 +331,10 @@ const Train = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label>Modelo</Label>
-                    <Select defaultValue="sequential">
+                    <Select
+                      value={config.tfModel}
+                      onValueChange={(v) => setConfig({ ...config, tfModel: v })}
+                    >
                       <SelectTrigger className="bg-card/60 backdrop-blur-sm">
                         <SelectValue />
                       </SelectTrigger>
@@ -338,7 +348,10 @@ const Train = () => {
 
                   <div className="space-y-2">
                     <Label>Optimizer</Label>
-                    <Select defaultValue="adam">
+                    <Select
+                      value={config.optimizer}
+                      onValueChange={(v) => setConfig({ ...config, optimizer: v })}
+                    >
                       <SelectTrigger className="bg-card/60 backdrop-blur-sm">
                         <SelectValue />
                       </SelectTrigger>
@@ -363,8 +376,14 @@ const Train = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Validation Split</Label>
-                    <Slider defaultValue={[0.2]} min={0.1} max={0.4} step={0.05} />
+                    <Label>Validation Split: {config.validationSplit}</Label>
+                    <Slider
+                      value={[config.validationSplit]}
+                      onValueChange={([v]) => setConfig({ ...config, validationSplit: v })}
+                      min={0.1}
+                      max={0.4}
+                      step={0.05}
+                    />
                   </div>
                 </div>
               </TabsContent>
@@ -384,7 +403,10 @@ const Train = () => {
               </div>
               <div className="p-4 rounded-xl bg-gradient-card-hover border border-accent/20 hover:border-accent/50 transition-all duration-300">
                 <p className="text-muted-foreground uppercase tracking-wider text-xs">Modelo</p>
-                <p className="font-bold text-accent text-lg mt-1">{config.modelType}</p>
+                <p className="font-bold text-accent text-lg mt-1">
+                  {framework === 'sklearn' ? config.modelType : 
+                   framework === 'pytorch' ? config.architecture : config.tfModel}
+                </p>
               </div>
               <div className="p-4 rounded-xl bg-gradient-card-hover border border-border/20 hover:border-border/50 transition-all duration-300">
                 <p className="text-muted-foreground uppercase tracking-wider text-xs">Test Size</p>
@@ -453,11 +475,11 @@ const Train = () => {
                   </div>
                   <div className="p-5 rounded-xl bg-gradient-card-hover border border-accent/30 hover:border-accent/60 transition-all duration-300 hover:scale-105">
                     <p className="text-xs text-muted-foreground uppercase tracking-wider">Loss Final</p>
-                    <p className="text-3xl font-bold text-accent mt-2">{trainingResults.loss.toFixed(4)}</p>
+                    <p className="text-3xl font-bold text-accent mt-2">{trainingResults.loss?.toFixed(4) || 'N/A'}</p>
                   </div>
                   <div className="p-5 rounded-xl bg-gradient-card-hover border border-primary/30 hover:border-primary/60 transition-all duration-300 hover:scale-105">
                     <p className="text-xs text-muted-foreground uppercase tracking-wider">Épocas</p>
-                    <p className="text-3xl font-bold text-primary mt-2">{trainingResults.epochs}</p>
+                    <p className="text-3xl font-bold text-primary mt-2">{trainingResults.epochs || config.epochs}</p>
                   </div>
                   <div className="p-5 rounded-xl bg-gradient-card-hover border border-border/30 hover:border-border/60 transition-all duration-300 hover:scale-105">
                     <p className="text-xs text-muted-foreground uppercase tracking-wider">Tiempo</p>
@@ -481,7 +503,7 @@ const Train = () => {
               onClick={handleTrain}
               size="lg"
               className="gap-3 bg-gradient-cyber shadow-glow hover:shadow-glow-lg hover:scale-105 transition-all duration-300 text-lg px-8 py-6"
-              disabled={isTraining}
+              disabled={isTraining || !csvData || csvColumns?.filter((c) => c.selected).length < 2}
             >
               {isTraining ? (
                 <>
@@ -503,4 +525,3 @@ const Train = () => {
 };
 
 export default Train;
-
