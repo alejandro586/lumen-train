@@ -94,7 +94,7 @@ const Clean = () => {
     totalRows: data.length,
     selectedColumns: columns.filter((c) => c.selected).length,
     totalNulls: columns.reduce((sum, col) => sum + col.nulls, 0),
-    duplicates: getDuplicatesCount(),
+    duplicates: getDuplicatesCount,
     numericSelected: columns.filter((c) => c.selected && c.type === 'number').length,
   }), [columns, data, getDuplicatesCount]);
 
@@ -599,12 +599,6 @@ const Clean = () => {
       </main>
     </div>
   );
-};
-
-// Util helper (agrega en @/utils/helpers.ts si no existe)
-export const isNumeric = (val: any): boolean => {
-  if (val === null || val === undefined || val === '') return false;
-  return !isNaN(parseFloat(val as string)) && isFinite(val as number);
 };
 
 export default Clean;

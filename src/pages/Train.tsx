@@ -194,7 +194,15 @@ const Train = () => {
           if (newProg >= 100) {
             clearInterval(interval);
             setIsTraining(false);
-            const mockResults = { accuracy: 85 + Math.random() * 10, trainTime: 2, epochs: 10, loss: 0.1 };
+            const mockResults: TrainingResults = { 
+              accuracy: 85 + Math.random() * 10, 
+              trainTime: 2, 
+              epochs: 10, 
+              loss: 0.1,
+              valAccuracy: 85 + Math.random() * 10,
+              valLoss: 0.1,
+              model: null as any
+            };
             setTrainingResults(mockResults);
             toast({ title: "✅ Completado rápido", description: `Precisión simulada: ${mockResults.accuracy.toFixed(2)}%` });
             setTimeout(() => navigate("/results"), 1000);
