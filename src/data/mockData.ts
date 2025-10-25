@@ -53,12 +53,12 @@ export const mockCsvData = [
 ];
 
 export const mockCsvColumns = [
-  { id: 1, name: "id", type: "int", selected: true, nulls: 0 },
+  { id: 1, name: "id", type: "number", selected: true, nulls: 0 },
   { id: 2, name: "nombre", type: "string", selected: true, nulls: 0 },
-  { id: 3, name: "edad", type: "int", selected: true, nulls: 0 },
-  { id: 4, name: "salario", type: "float", selected: true, nulls: 0 },
+  { id: 3, name: "edad", type: "number", selected: true, nulls: 0 },
+  { id: 4, name: "salario", type: "number", selected: true, nulls: 0 },
   { id: 5, name: "departamento", type: "string", selected: true, nulls: 0 },
-  { id: 6, name: "experiencia", type: "float", selected: true, nulls: 0 },
+  { id: 6, name: "experiencia", type: "number", selected: true, nulls: 0 },
   { id: 7, name: "activo", type: "string", selected: true, nulls: 0 },
 ];
 

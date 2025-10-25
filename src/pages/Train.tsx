@@ -205,10 +205,21 @@ const Train = () => {
   const selectedColumns = useMemo(() => csvColumns?.filter((c) => c.selected) || [], [csvColumns]);
 
   const handleTrain = useCallback(async () => {
-    if (!csvData || csvData.length === 0 || selectedColumns.length < 2) {
+    const numericColumns = selectedColumns.filter(c => c.type === 'number');
+    
+    if (!csvData || csvData.length === 0) {
       toast({
         title: "Datos insuficientes",
-        description: "Selecciona al menos 1 feature y 1 target column para entrenar",
+        description: "No hay datos disponibles para entrenar",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (selectedColumns.length === 0 || numericColumns.length === 0) {
+      toast({
+        title: "Datos insuficientes",
+        description: "Selecciona al menos una columna numérica para entrenar",
         variant: "destructive",
       });
       return;

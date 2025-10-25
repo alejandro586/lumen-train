@@ -246,16 +246,16 @@ const Clean = () => {
     });
   }, [columns, data, setCsvData, toast]);
 
-  // Advertencia si <2 numéricas
+  // Advertencia si no hay numéricas
   useEffect(() => {
-    if (stats.numericSelected < 2) {
+    if (stats.numericSelected === 0 && columns.length > 0) {
       toast({
         title: "Advertencia para Entrenamiento",
-        description: `Solo ${stats.numericSelected} columnas numéricas seleccionadas. Necesitas al menos 2 para entrenar un modelo. Usa "Convertir a Numérico" o selecciona más.`,
+        description: `No hay columnas numéricas seleccionadas. Usa "Convertir a Numérico" para procesar datos de texto.`,
         variant: "destructive",
       });
     }
-  }, [stats.numericSelected, toast]);
+  }, [stats.numericSelected, columns.length, toast]);
 
   if (isLoading) {
     return (
@@ -588,10 +588,28 @@ const Clean = () => {
               ← Volver a Cargar
             </Button>
             <Button
-              onClick={() => navigate("/train")}
+              onClick={() => {
+                if (stats.selectedColumns === 0) {
+                  toast({
+                    title: "Error",
+                    description: "Selecciona al menos una columna para continuar",
+                    variant: "destructive",
+                  });
+                  return;
+                }
+                if (stats.numericSelected === 0) {
+                  toast({
+                    title: "Advertencia",
+                    description: "No hay columnas numéricas seleccionadas. Los datos no se podrán entrenar sin al menos una columna numérica.",
+                    variant: "destructive",
+                  });
+                  return;
+                }
+                navigate("/train");
+              }}
               size="lg"
               className="gap-3 text-lg px-8 py-6 bg-gradient-cyber hover:opacity-90 hover:shadow-neon hover:scale-105 transition-all shadow-glow disabled:opacity-50 animate-pulse-glow rounded-xl"
-              disabled={stats.numericSelected < 2}
+              disabled={stats.selectedColumns === 0}
             >
               Continuar a Entrenar Modelo
               <ArrowRight className="w-5 h-5" />
