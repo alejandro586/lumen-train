@@ -85,24 +85,26 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background dark text-foreground relative overflow-hidden">
-      {/* Fondo decorativo artístico */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,hsl(var(--primary)/0.15),transparent_50%)]"></div>
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,hsl(var(--accent)/0.15),transparent_50%)]"></div>
-      <div className="absolute top-1/4 left-1/3 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-pulse"></div>
-      <div className="absolute bottom-1/4 right-1/3 w-80 h-80 bg-accent/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+    <div className="min-h-screen bg-background text-foreground relative overflow-hidden">
+      {/* Fondo decorativo futurista mejorado */}
+      <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-primary/5"></div>
+      <div className="absolute top-0 left-0 w-full h-full">
+        <div className="absolute top-20 left-20 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] animate-float"></div>
+        <div className="absolute bottom-20 right-20 w-[400px] h-[400px] bg-accent/10 rounded-full blur-[100px] animate-float" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute top-1/2 left-1/2 w-[300px] h-[300px] bg-primary/5 rounded-full blur-[80px] animate-pulse"></div>
+      </div>
 
-      {/* Header */}
-      <header className="border-b border-border/50 bg-card/30 backdrop-blur-xl sticky top-0 z-10 shadow-lg">
-        <div className="container mx-auto px-6 py-5 flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-primary flex items-center justify-center shadow-glow">
-            <Database className="w-6 h-6 text-primary-foreground" />
+      {/* Header mejorado */}
+      <header className="border-b border-border/30 bg-card/20 backdrop-blur-2xl sticky top-0 z-20 shadow-xl">
+        <div className="container mx-auto px-6 py-6 flex items-center gap-4">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-cyber flex items-center justify-center shadow-glow animate-pulse-glow">
+            <Database className="w-7 h-7 text-primary-foreground" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+            <h1 className="text-3xl font-bold bg-gradient-cyber bg-clip-text text-transparent">
               ML Data Pipeline
             </h1>
-            <p className="text-sm text-muted-foreground">Sistema de Machine Learning End-to-End</p>
+            <p className="text-sm text-muted-foreground">Sistema de Machine Learning End-to-End con IA Real</p>
           </div>
         </div>
       </header>
@@ -110,27 +112,41 @@ const Dashboard = () => {
       {/* Main Content */}
       <main className="container mx-auto px-6 py-12 relative z-10">
         <div className="space-y-8 animate-fade-in">
-          {/* Welcome Section */}
-          <div className="text-center space-y-3">
-            <h2 className="text-4xl md:text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+          {/* Welcome Section mejorado */}
+          <div className="text-center space-y-5 mb-8">
+            <h2 className="text-5xl md:text-6xl font-bold bg-gradient-cyber bg-clip-text text-transparent animate-gradient-shift">
               Bienvenido a tu Pipeline
             </h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Selecciona un módulo para comenzar tu flujo de trabajo de Machine Learning
+            <p className="text-muted-foreground text-xl max-w-3xl mx-auto leading-relaxed">
+              Plataforma completa de Machine Learning con entrenamiento real usando <span className="text-primary font-semibold">TensorFlow.js</span>
             </p>
+            <div className="flex justify-center gap-3 flex-wrap">
+              <Badge variant="outline" className="text-sm px-4 py-2 border-primary/40 bg-primary/5">
+                <Sparkles className="w-3 h-3 mr-1" /> Entrenamiento Real
+              </Badge>
+              <Badge variant="outline" className="text-sm px-4 py-2 border-accent/40 bg-accent/5">
+                <BarChart3 className="w-3 h-3 mr-1" /> 3 Frameworks
+              </Badge>
+              <Badge variant="outline" className="text-sm px-4 py-2 border-border/40">
+                <Settings className="w-3 h-3 mr-1" /> Pipeline Completo
+              </Badge>
+            </div>
           </div>
 
-          {/* CSV Info Card */}
+          {/* CSV Info Card mejorado */}
           {csvData && csvColumns && fileName && (
-            <Card className="p-6 bg-gradient-card border border-primary/30 shadow-card animate-fade-in">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
-                    <FileText className="w-5 h-5 text-primary" />
+            <Card className="p-7 bg-gradient-card border-2 border-primary/40 shadow-neon animate-scale-in hover:scale-[1.02] transition-all duration-300">
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-neon flex items-center justify-center shadow-glow animate-pulse-glow">
+                    <FileText className="w-6 h-6 text-primary-foreground" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-foreground">Archivo CSV Cargado</h3>
-                    <p className="text-sm text-muted-foreground">{fileName}</p>
+                    <h3 className="font-bold text-lg text-foreground">Archivo CSV Cargado</h3>
+                    <p className="text-sm text-muted-foreground flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                      {fileName}
+                    </p>
                   </div>
                 </div>
                 <div className="flex gap-2">
@@ -178,16 +194,39 @@ const Dashboard = () => {
             ))}
           </div>
 
-          {/* Info Section */}
-          <div className="mt-16 p-8 rounded-2xl bg-gradient-card border border-border/50 backdrop-blur-sm shadow-card hover:shadow-card-hover transition-all duration-300">
-            <h3 className="text-lg font-semibold mb-3 text-foreground flex items-center gap-2">
-              <span className="text-2xl">🚀</span> Pipeline Completo
-            </h3>
-            <p className="text-muted-foreground leading-relaxed">
-              Este sistema te permite cargar datos desde múltiples fuentes, limpiarlos y prepararlos,
-              entrenar modelos de ML con diferentes frameworks, y analizar los resultados con métricas detalladas.
-              Todo listo para conectar con tu backend Python a través de APIs.
+          {/* Info Section mejorado */}
+          <div className="mt-16 p-10 rounded-2xl bg-gradient-card border-2 border-primary/30 backdrop-blur-sm shadow-neon hover:shadow-glow transition-all duration-500">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-fire flex items-center justify-center shadow-glow animate-pulse-glow">
+                <span className="text-3xl">🚀</span>
+              </div>
+              <h3 className="text-2xl font-bold text-foreground">Pipeline Completo de Machine Learning</h3>
+            </div>
+            <p className="text-muted-foreground text-lg leading-relaxed">
+              Sistema end-to-end que te permite cargar datos desde múltiples fuentes, limpiarlos y prepararlos con herramientas avanzadas,
+              entrenar modelos reales usando <span className="text-primary font-semibold">TensorFlow.js</span> con 3 frameworks diferentes 
+              (Scikit-learn, PyTorch, TensorFlow), y analizar resultados con métricas detalladas y visualizaciones profesionales.
             </p>
+            <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="p-4 rounded-xl bg-gradient-card-hover border border-primary/20">
+                <h4 className="font-semibold text-primary mb-2 flex items-center gap-2">
+                  <Database className="w-4 h-4" /> Carga Flexible
+                </h4>
+                <p className="text-sm text-muted-foreground">CSV, PostgreSQL, MySQL, SQLite</p>
+              </div>
+              <div className="p-4 rounded-xl bg-gradient-card-hover border border-accent/20">
+                <h4 className="font-semibold text-accent mb-2 flex items-center gap-2">
+                  <Sparkles className="w-4 h-4" /> Limpieza Inteligente
+                </h4>
+                <p className="text-sm text-muted-foreground">Nulos, duplicados, tipos, filtros</p>
+              </div>
+              <div className="p-4 rounded-xl bg-gradient-card-hover border border-border/20">
+                <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2">
+                  <Settings className="w-4 h-4" /> IA Real
+                </h4>
+                <p className="text-sm text-muted-foreground">TensorFlow.js con redes neuronales</p>
+              </div>
+            </div>
           </div>
         </div>
       </main>

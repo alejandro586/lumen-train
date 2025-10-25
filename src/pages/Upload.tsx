@@ -90,31 +90,31 @@ const Upload = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background dark text-foreground relative overflow-hidden">
-      {/* Fondo decorativo */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,hsl(var(--primary)/0.12),transparent_60%)]"></div>
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,hsl(var(--accent)/0.12),transparent_70%)]"></div>
-      <div className="absolute top-20 right-20 w-72 h-72 bg-primary/5 rounded-full blur-3xl"></div>
+    <div className="min-h-screen bg-background text-foreground relative overflow-hidden">
+      {/* Fondo decorativo futurista */}
+      <div className="absolute inset-0 bg-gradient-to-br from-background via-accent/5 to-background"></div>
+      <div className="absolute top-20 right-20 w-[500px] h-[500px] bg-accent/10 rounded-full blur-[130px] animate-float"></div>
+      <div className="absolute bottom-20 left-20 w-[400px] h-[400px] bg-primary/10 rounded-full blur-[110px] animate-float" style={{ animationDelay: '2s' }}></div>
 
-      {/* Header */}
-      <header className="border-b border-border/50 bg-card/30 backdrop-blur-xl sticky top-0 z-10 shadow-lg">
-        <div className="container mx-auto px-6 py-5 flex items-center gap-3">
+      {/* Header mejorado */}
+      <header className="border-b border-border/30 bg-card/20 backdrop-blur-2xl sticky top-0 z-10 shadow-xl">
+        <div className="container mx-auto px-6 py-6 flex items-center gap-4">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => navigate("/")}
-            className="gap-2 hover:text-primary transition-colors"
+            className="gap-2 hover:text-primary transition-all hover:scale-105"
           >
             ← Dashboard
           </Button>
-          <div className="w-12 h-12 rounded-2xl bg-gradient-primary flex items-center justify-center shadow-glow">
-            <UploadIcon className="w-6 h-6 text-primary-foreground" />
+          <div className="w-14 h-14 rounded-2xl bg-gradient-primary flex items-center justify-center shadow-glow animate-pulse-glow">
+            <UploadIcon className="w-7 h-7 text-primary-foreground" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+            <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               Cargar Datos
             </h1>
-            <p className="text-sm text-muted-foreground">Sube CSV o conecta una base de datos</p>
+            <p className="text-sm text-muted-foreground">Sube CSV o conecta bases de datos</p>
           </div>
         </div>
       </header>
@@ -122,27 +122,27 @@ const Upload = () => {
       {/* Contenido principal */}
       <main className="container mx-auto px-6 py-12 relative z-10">
         <div className="max-w-4xl mx-auto space-y-10 animate-fade-in">
-          {/* Sección de subida CSV */}
-          <Card className="p-8 border border-border/50 bg-gradient-card backdrop-blur-md shadow-card hover:shadow-card-hover transition-all duration-500 rounded-2xl">
-            <div className="space-y-6">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-primary flex items-center justify-center shadow-glow">
-                  <FileText className="w-6 h-6 text-primary-foreground" />
+          {/* Sección de subida CSV mejorada */}
+          <Card className="p-10 border-2 border-border/40 bg-gradient-card backdrop-blur-md shadow-card hover:shadow-glow transition-all duration-500 rounded-2xl hover:scale-[1.01]">
+            <div className="space-y-7">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-primary flex items-center justify-center shadow-glow animate-pulse-glow">
+                  <FileText className="w-7 h-7 text-primary-foreground" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-semibold text-foreground">Subir Archivo CSV</h2>
-                  <p className="text-sm text-muted-foreground">Formatos aceptados: .csv</p>
+                  <h2 className="text-2xl font-bold text-foreground">Subir Archivo CSV</h2>
+                  <p className="text-sm text-muted-foreground">Formatos: .csv • Máximo 100MB</p>
                 </div>
               </div>
 
-              <div className="border-2 border-dashed border-border/50 rounded-2xl p-10 text-center hover:border-primary/60 hover:bg-primary/5 transition-all duration-300 bg-card/20">
-                <UploadIcon className="w-14 h-14 mx-auto mb-5 text-muted-foreground" />
+              <div className="border-2 border-dashed border-primary/40 rounded-2xl p-12 text-center hover:border-primary/80 hover:bg-primary/5 transition-all duration-300 bg-card/30 backdrop-blur-sm">
+                <UploadIcon className="w-16 h-16 mx-auto mb-6 text-muted-foreground animate-float" />
                 <Label htmlFor="file-upload" className="cursor-pointer">
-                  <div className="space-y-2">
-                    <p className="text-base font-semibold text-foreground">
+                  <div className="space-y-3">
+                    <p className="text-lg font-bold text-foreground">
                       Arrastra tu archivo aquí o haz clic para seleccionar
                     </p>
-                    <p className="text-sm text-muted-foreground">Máximo 100MB</p>
+                    <p className="text-sm text-muted-foreground">Procesamiento rápido y seguro</p>
                   </div>
                   <Input
                     id="file-upload"
@@ -155,12 +155,12 @@ const Upload = () => {
               </div>
 
               {uploadedFile && (
-                <div className="flex items-center gap-3 p-5 bg-primary/10 border border-primary/30 rounded-xl shadow-md">
-                  <CheckCircle2 className="w-6 h-6 text-primary" />
+                <div className="flex items-center gap-4 p-6 bg-gradient-neon border-2 border-primary/40 rounded-xl shadow-glow animate-scale-in">
+                  <CheckCircle2 className="w-7 h-7 text-primary-foreground" />
                   <div className="flex-1">
-                    <p className="font-semibold text-foreground">{uploadedFile.name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {(uploadedFile.size / 1024).toFixed(2)} KB
+                    <p className="font-bold text-lg text-primary-foreground">{uploadedFile.name}</p>
+                    <p className="text-sm text-primary-foreground/80">
+                      {(uploadedFile.size / 1024).toFixed(2)} KB • Listo para procesar
                     </p>
                   </div>
                 </div>
@@ -210,16 +210,16 @@ const Upload = () => {
             </div>
           </Card>
 
-          {/* Botón final */}
-          <div className="flex justify-end">
+          {/* Botón final mejorado */}
+          <div className="flex justify-end pt-8">
             <Button
               onClick={handleProceed}
               size="lg"
-              className="gap-2 bg-gradient-primary font-semibold hover:opacity-90 hover:shadow-glow transition-all rounded-xl shadow-card"
+              className="gap-3 text-lg px-8 py-6 bg-gradient-cyber font-bold hover:opacity-90 hover:shadow-neon hover:scale-105 transition-all rounded-xl shadow-glow animate-pulse-glow"
               disabled={!uploadedFile}
             >
               Continuar a Limpiar Datos
-              <ArrowRight className="w-4 h-4" />
+              <ArrowRight className="w-5 h-5" />
             </Button>
           </div>
         </div>

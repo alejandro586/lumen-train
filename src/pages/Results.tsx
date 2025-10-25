@@ -61,33 +61,34 @@ const Results = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background dark text-foreground relative overflow-hidden">
-      {/* Fondo decorativo */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/0.12),transparent_60%)]"></div>
-      <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-accent/5 rounded-full blur-3xl animate-pulse"></div>
+    <div className="min-h-screen bg-background text-foreground relative overflow-hidden">
+      {/* Fondo decorativo futurista */}
+      <div className="absolute inset-0 bg-gradient-to-br from-background via-primary/5 to-background"></div>
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/8 rounded-full blur-[150px] animate-float"></div>
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-accent/8 rounded-full blur-[120px] animate-float" style={{ animationDelay: '1.5s' }}></div>
       
-      {/* Header */}
-      <header className="sticky top-0 z-20 bg-card/30 backdrop-blur-xl border-b border-border/50 shadow-lg">
-        <div className="container mx-auto px-6 py-5 flex items-center gap-4">
+      {/* Header mejorado */}
+      <header className="sticky top-0 z-20 bg-card/20 backdrop-blur-2xl border-b border-border/30 shadow-xl">
+        <div className="container mx-auto px-6 py-6 flex items-center gap-4">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => navigate("/")}
-            className="hover:text-primary transition-colors"
+            className="hover:text-primary transition-all hover:scale-105"
           >
             ← Dashboard
           </Button>
 
-          <div className="w-12 h-12 rounded-2xl bg-gradient-primary flex items-center justify-center shadow-glow">
-            <BarChart3 className="w-6 h-6 text-primary-foreground" />
+          <div className="w-14 h-14 rounded-2xl bg-gradient-primary flex items-center justify-center shadow-glow animate-pulse-glow">
+            <BarChart3 className="w-7 h-7 text-primary-foreground" />
           </div>
 
           <div>
-            <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+            <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               Resultados del Modelo
             </h1>
             <p className="text-sm text-muted-foreground">
-              Métricas y análisis del entrenamiento
+              Métricas avanzadas y análisis de rendimiento
             </p>
           </div>
         </div>
@@ -95,25 +96,25 @@ const Results = () => {
 
       {/* Main */}
       <main className="container mx-auto px-6 py-10 space-y-10 animate-fade-in relative z-10">
-        {/* Banner */}
-        <Card className="p-6 bg-gradient-primary border-none shadow-glow animate-fade-in">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center">
-              <CheckCircle2 className="w-8 h-8 text-white" />
+        {/* Banner mejorado */}
+        <Card className="p-8 bg-gradient-neon border-none shadow-neon animate-fade-in hover:scale-[1.01] transition-all duration-500">
+          <div className="flex items-center gap-5">
+            <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center animate-pulse-glow">
+              <CheckCircle2 className="w-10 h-10 text-white" />
             </div>
             <div className="flex-1">
-              <h2 className="text-2xl font-bold text-white mb-1">
-                ¡Entrenamiento Exitoso!
+              <h2 className="text-3xl font-bold text-white mb-2">
+                ¡Entrenamiento Exitoso! 🎉
               </h2>
-              <p className="text-white/80">
-                Tu modelo ha sido entrenado y está listo para usar
+              <p className="text-white/90 text-lg">
+                Tu modelo ha sido entrenado con <span className="font-bold">TensorFlow.js</span> y está listo para usar
               </p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               <Button
                 variant="secondary"
                 size="lg"
-                className="gap-2 bg-white/20 hover:bg-white/30 text-white border-white/30"
+                className="gap-2 bg-white/20 hover:bg-white/30 text-white border-white/30 hover:scale-105 transition-all"
                 onClick={() => {
                   const modelData = {
                     fileName: fileName || "modelo_entrenado",
@@ -148,7 +149,7 @@ const Results = () => {
               <Button
                 variant="secondary"
                 size="lg"
-                className="gap-2 bg-white/20 hover:bg-white/30 text-white border-white/30"
+                className="gap-2 bg-white/20 hover:bg-white/30 text-white border-white/30 hover:scale-105 transition-all"
                 onClick={() => {
                   const shareText = `¡He entrenado un modelo de ML con ${metrics[0].value}% de precisión! 🚀\n\n` +
                     `📊 Métricas:\n` +
@@ -179,7 +180,7 @@ const Results = () => {
                 variant="secondary"
                 size="lg"
                 onClick={() => navigate("/train")}
-                className="gap-2 bg-white/20 hover:bg-white/30 text-white border-white/30"
+                className="gap-2 bg-white/20 hover:bg-white/30 text-white border-white/30 hover:scale-105 transition-all"
               >
                 <RefreshCw className="w-5 h-5" />
                 Re-entrenar
@@ -193,7 +194,7 @@ const Results = () => {
           {metrics.map((metric, i) => (
             <Card
               key={metric.label}
-              className="p-6 border border-border/50 bg-gradient-card backdrop-blur-sm hover:scale-[1.05] hover:-translate-y-1 transition-all duration-500 shadow-card animate-fade-in"
+              className="p-7 border-2 border-border/40 bg-gradient-card backdrop-blur-sm hover:scale-105 hover:-translate-y-2 hover:border-primary/60 transition-all duration-500 shadow-card hover:shadow-glow animate-fade-in"
               style={{ animationDelay: `${i * 100}ms` }}
             >
               <div className="space-y-3">

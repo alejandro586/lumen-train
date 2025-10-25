@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { lazy, Suspense } from "react";
-import { Settings, ArrowRight, Play, Code2, FileText, Zap } from "lucide-react";
+import { Settings, ArrowRight, Play, Code2, FileText, Zap, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -25,14 +24,14 @@ import { useToast } from "@/hooks/use-toast";
 import { useData } from "@/contexts/DataContext";
 import { trainModel, type TrainingResults } from "@/utils/mlTraining";
 
-// Lazy load para tabs (crea archivos separados: SklearnTab.tsx, etc.)
-const SklearnTab = lazy(() => Promise.resolve({ default: () => (
+// Tabs con configuración funcional
+const SklearnTab = ({ config, setConfig }: { config: any; setConfig: any }) => (
   <div className="space-y-8 mt-6">
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div className="space-y-2">
         <Label>Tipo de Modelo</Label>
-        <Select value={/* config.modelType */ "random_forest"} onValueChange={/* handler */ () => {}}>
-          <SelectTrigger className="bg-card/60 backdrop-blur-sm">
+        <Select value={config.modelType} onValueChange={(val) => setConfig({ ...config, modelType: val })}>
+          <SelectTrigger className="bg-card/60 backdrop-blur-sm border-primary/30">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -44,23 +43,35 @@ const SklearnTab = lazy(() => Promise.resolve({ default: () => (
         </Select>
       </div>
       <div className="space-y-2">
-        <Label>Test Size: {/* config.testSize */ 0.2}</Label>
-        <Slider value={[0.2]} onValueChange={/* handler */ () => {}} min={0.1} max={0.5} step={0.05} />
+        <Label>Test Size: {config.testSize}</Label>
+        <Slider 
+          value={[config.testSize]} 
+          onValueChange={(val) => setConfig({ ...config, testSize: val[0] })} 
+          min={0.1} 
+          max={0.5} 
+          step={0.05} 
+          className="cursor-pointer"
+        />
       </div>
       <div className="space-y-2">
         <Label>Random State</Label>
-        <Input type="number" value={42} onChange={/* handler */ () => {}} className="bg-card/60 backdrop-blur-sm" />
+        <Input 
+          type="number" 
+          value={config.randomState} 
+          onChange={(e) => setConfig({ ...config, randomState: parseInt(e.target.value) || 42 })} 
+          className="bg-card/60 backdrop-blur-sm border-primary/30" 
+        />
       </div>
     </div>
   </div>
-)}));
-const PytorchTab = lazy(() => Promise.resolve({ default: () => (
+);
+const PytorchTab = ({ config, setConfig }: { config: any; setConfig: any }) => (
   <div className="space-y-8 mt-6">
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div className="space-y-2">
         <Label>Arquitectura</Label>
-        <Select value={/* config.architecture */ "feedforward"} onValueChange={/* handler */ () => {}}>
-          <SelectTrigger className="bg-card/60 backdrop-blur-sm">
+        <Select value={config.architecture} onValueChange={(val) => setConfig({ ...config, architecture: val })}>
+          <SelectTrigger className="bg-card/60 backdrop-blur-sm border-primary/30">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -73,26 +84,42 @@ const PytorchTab = lazy(() => Promise.resolve({ default: () => (
       </div>
       <div className="space-y-2">
         <Label>Épocas</Label>
-        <Input type="number" value={10} onChange={/* handler */ () => {}} className="bg-card/60 backdrop-blur-sm" />
+        <Input 
+          type="number" 
+          value={config.epochs} 
+          onChange={(e) => setConfig({ ...config, epochs: parseInt(e.target.value) || 10 })} 
+          className="bg-card/60 backdrop-blur-sm border-primary/30" 
+        />
       </div>
       <div className="space-y-2">
         <Label>Batch Size</Label>
-        <Input type="number" value={32} onChange={/* handler */ () => {}} className="bg-card/60 backdrop-blur-sm" />
+        <Input 
+          type="number" 
+          value={config.batchSize} 
+          onChange={(e) => setConfig({ ...config, batchSize: parseInt(e.target.value) || 32 })} 
+          className="bg-card/60 backdrop-blur-sm border-primary/30" 
+        />
       </div>
       <div className="space-y-2">
         <Label>Learning Rate</Label>
-        <Input type="number" step="0.0001" value={0.001} onChange={/* handler */ () => {}} className="bg-card/60 backdrop-blur-sm" />
+        <Input 
+          type="number" 
+          step="0.0001" 
+          value={config.learningRate} 
+          onChange={(e) => setConfig({ ...config, learningRate: parseFloat(e.target.value) || 0.001 })} 
+          className="bg-card/60 backdrop-blur-sm border-primary/30" 
+        />
       </div>
     </div>
   </div>
-)}));
-const TensorflowTab = lazy(() => Promise.resolve({ default: () => (
+);
+const TensorflowTab = ({ config, setConfig }: { config: any; setConfig: any }) => (
   <div className="space-y-8 mt-6">
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div className="space-y-2">
         <Label>Modelo</Label>
-        <Select value={/* config.tfModel */ "sequential"} onValueChange={/* handler */ () => {}}>
-          <SelectTrigger className="bg-card/60 backdrop-blur-sm">
+        <Select value={config.tfModel} onValueChange={(val) => setConfig({ ...config, tfModel: val })}>
+          <SelectTrigger className="bg-card/60 backdrop-blur-sm border-primary/30">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -104,8 +131,8 @@ const TensorflowTab = lazy(() => Promise.resolve({ default: () => (
       </div>
       <div className="space-y-2">
         <Label>Optimizer</Label>
-        <Select value={/* config.optimizer */ "adam"} onValueChange={/* handler */ () => {}}>
-          <SelectTrigger className="bg-card/60 backdrop-blur-sm">
+        <Select value={config.optimizer} onValueChange={(val) => setConfig({ ...config, optimizer: val })}>
+          <SelectTrigger className="bg-card/60 backdrop-blur-sm border-primary/30">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -117,15 +144,27 @@ const TensorflowTab = lazy(() => Promise.resolve({ default: () => (
       </div>
       <div className="space-y-2">
         <Label>Épocas</Label>
-        <Input type="number" value={10} onChange={/* handler */ () => {}} className="bg-card/60 backdrop-blur-sm" />
+        <Input 
+          type="number" 
+          value={config.epochs} 
+          onChange={(e) => setConfig({ ...config, epochs: parseInt(e.target.value) || 10 })} 
+          className="bg-card/60 backdrop-blur-sm border-primary/30" 
+        />
       </div>
       <div className="space-y-2">
-        <Label>Validation Split: {/* config.validationSplit */ 0.2}</Label>
-        <Slider value={[0.2]} onValueChange={/* handler */ () => {}} min={0.1} max={0.4} step={0.05} />
+        <Label>Validation Split: {config.validationSplit}</Label>
+        <Slider 
+          value={[config.validationSplit]} 
+          onValueChange={(val) => setConfig({ ...config, validationSplit: val[0] })} 
+          min={0.1} 
+          max={0.4} 
+          step={0.05} 
+          className="cursor-pointer"
+        />
       </div>
     </div>
   </div>
-)}));
+);
 
 const Train = () => {
   const navigate = useNavigate();
@@ -367,11 +406,9 @@ const Train = () => {
                 <TabsTrigger value="pytorch" className="data-[state=active]:bg-gradient-fire data-[state=active]:text-primary-foreground transition-all duration-300">PyTorch</TabsTrigger>
                 <TabsTrigger value="tensorflow" className="data-[state=active]:bg-gradient-forest data-[state=active]:text-primary-foreground transition-all duration-300">TensorFlow</TabsTrigger>
               </TabsList>
-              <Suspense fallback={<div className="p-8 text-center">Cargando configuración...</div>}>
-                <TabsContent value="sklearn" className="mt-6"><SklearnTab /></TabsContent>
-                <TabsContent value="pytorch" className="mt-6"><PytorchTab /></TabsContent>
-                <TabsContent value="tensorflow" className="mt-6"><TensorflowTab /></TabsContent>
-              </Suspense>
+              <TabsContent value="sklearn" className="mt-6"><SklearnTab config={config} setConfig={setConfig} /></TabsContent>
+              <TabsContent value="pytorch" className="mt-6"><PytorchTab config={config} setConfig={setConfig} /></TabsContent>
+              <TabsContent value="tensorflow" className="mt-6"><TensorflowTab config={config} setConfig={setConfig} /></TabsContent>
             </Tabs>
           </Card>
 
@@ -463,17 +500,17 @@ const Train = () => {
             <Button
               onClick={handleTrain}
               size="lg"
-              className="gap-3 bg-gradient-cyber shadow-glow hover:shadow-glow-lg hover:scale-105 transition-all duration-300 text-lg px-8 py-6 disabled:opacity-50"
+              className="gap-3 bg-gradient-neon shadow-glow hover:shadow-neon hover:scale-110 transition-all duration-500 text-lg font-bold px-10 py-7 disabled:opacity-50 rounded-xl animate-pulse-glow"
               disabled={isTraining || selectedColumns.length < 2}
             >
               {isTraining ? (
                 <>
-                  <Zap className="w-5 h-5 animate-pulse" />
+                  <RefreshCw className="w-6 h-6 animate-spin" />
                   Entrenando...
                 </>
               ) : (
                 <>
-                  <Play className="w-5 h-5" />
+                  <Play className="w-6 h-6" />
                   Iniciar Entrenamiento
                 </>
               )}

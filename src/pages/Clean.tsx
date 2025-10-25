@@ -272,31 +272,32 @@ const Clean = () => {
   const previewRows = data.slice(0, data.length > 1000 ? 10 : 15);
 
   return (
-    <div className="min-h-screen bg-background dark text-foreground relative overflow-hidden">
-      {/* Fondo decorativo - Simplificado */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.12),transparent_60%)]"></div>
-      <div className="absolute top-40 left-20 w-96 h-96 bg-accent/5 rounded-full blur-3xl"></div>
+    <div className="min-h-screen bg-background text-foreground relative overflow-hidden">
+      {/* Fondo decorativo futurista */}
+      <div className="absolute inset-0 bg-gradient-to-br from-background via-primary/5 to-background"></div>
+      <div className="absolute top-40 left-20 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[140px] animate-float"></div>
+      <div className="absolute bottom-40 right-20 w-[400px] h-[400px] bg-accent/10 rounded-full blur-[120px] animate-float" style={{ animationDelay: '1s' }}></div>
       
-      {/* Header */}
-      <header className="sticky top-0 z-10 border-b border-border/50 bg-card/30 backdrop-blur-xl shadow-lg">
-        <div className="container mx-auto px-6 py-6 flex items-center gap-3">
+      {/* Header mejorado */}
+      <header className="sticky top-0 z-10 border-b border-border/30 bg-card/20 backdrop-blur-2xl shadow-xl">
+        <div className="container mx-auto px-6 py-6 flex items-center gap-4">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => navigate("/")}
-            className="gap-2 hover:text-primary"
+            className="gap-2 hover:text-primary transition-all hover:scale-105"
           >
             ← Dashboard
           </Button>
-          <div className="w-12 h-12 rounded-2xl bg-gradient-neon flex items-center justify-center shadow-glow">
-            <Sparkles className="w-6 h-6 text-primary-foreground" />
+          <div className="w-14 h-14 rounded-2xl bg-gradient-neon flex items-center justify-center shadow-glow animate-pulse-glow">
+            <Sparkles className="w-7 h-7 text-primary-foreground" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+            <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               Limpieza de Datos
             </h1>
             <p className="text-sm text-muted-foreground">
-              Visualiza, analiza y prepara tus datos para el modelo
+              Prepara y optimiza tus datos para el entrenamiento
             </p>
           </div>
         </div>
@@ -305,23 +306,24 @@ const Clean = () => {
       {/* Main */}
       <main className="container mx-auto px-6 py-12 animate-fade-in relative z-10">
         <div className="space-y-10 max-w-6xl mx-auto">
-          {/* Stats */}
+          {/* Stats mejorados */}
           <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
             {[
-              { label: "Total Filas", value: stats.totalRows.toLocaleString(), icon: <Columns />, color: "text-foreground" },
-              { label: "Columnas Seleccionadas", value: `${stats.selectedColumns}/${columns.length}`, icon: <Filter />, color: "text-primary" },
-              { label: "Valores Nulos", value: stats.totalNulls, icon: <Trash2 />, color: "text-accent" },
-              { label: "Duplicados", value: stats.duplicates, icon: <Sparkles />, color: "text-destructive" },
-              { label: "Numéricas Sel.", value: stats.numericSelected, icon: <Hash />, color: stats.numericSelected >= 2 ? "text-green-600" : "text-yellow-600" },
+              { label: "Total Filas", value: stats.totalRows.toLocaleString(), icon: <Columns />, color: "text-foreground", gradient: "bg-gradient-card" },
+              { label: "Columnas Seleccionadas", value: `${stats.selectedColumns}/${columns.length}`, icon: <Filter />, color: "text-primary", gradient: "bg-gradient-cyber" },
+              { label: "Valores Nulos", value: stats.totalNulls, icon: <Trash2 />, color: "text-accent", gradient: "bg-gradient-fire" },
+              { label: "Duplicados", value: stats.duplicates, icon: <Sparkles />, color: "text-destructive", gradient: "bg-gradient-neon" },
+              { label: "Numéricas Sel.", value: stats.numericSelected, icon: <Hash />, color: stats.numericSelected >= 2 ? "text-green-600" : "text-yellow-600", gradient: "bg-gradient-forest" },
             ].map((item, idx) => (
               <Card
                 key={idx}
-                className="relative overflow-hidden p-6 border border-border/50 bg-gradient-card backdrop-blur-sm shadow-card hover:shadow-card-hover hover:-translate-y-2 transition-all duration-500"
+                className="relative overflow-hidden p-6 border-2 border-border/40 bg-gradient-card backdrop-blur-sm shadow-card hover:shadow-glow hover:-translate-y-3 hover:scale-105 transition-all duration-500 animate-fade-in"
+                style={{ animationDelay: `${idx * 100}ms` }}
               >
-                <div className="flex items-center gap-3">
-                  <div className="p-3 rounded-xl bg-primary/10 border border-primary/20">{item.icon}</div>
+                <div className="flex items-center gap-4">
+                  <div className={`p-3 rounded-xl ${item.gradient} border border-primary/20 shadow-glow`}>{item.icon}</div>
                   <div>
-                    <p className="text-sm text-muted-foreground">{item.label}</p>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider">{item.label}</p>
                     <p className={`text-3xl font-bold ${item.color}`}>{item.value}</p>
                   </div>
                 </div>
@@ -329,18 +331,18 @@ const Clean = () => {
             ))}
           </div>
 
-          {/* Column Selection */}
-          <Card className="p-8 bg-gradient-card border border-border/50 shadow-card hover:shadow-card-hover transition-all duration-500">
+          {/* Column Selection mejorado */}
+          <Card className="p-8 bg-gradient-card border-2 border-border/40 shadow-card hover:shadow-glow transition-all duration-500">
             <div className="space-y-6">
               <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-cyber flex items-center justify-center shadow-glow">
-                    <Filter className="w-6 h-6 text-primary-foreground" />
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-cyber flex items-center justify-center shadow-glow animate-pulse-glow">
+                    <Filter className="w-7 h-7 text-primary-foreground" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-semibold">Selección de Columnas</h2>
+                    <h2 className="text-2xl font-bold">Selección de Columnas</h2>
                     <p className="text-sm text-muted-foreground">
-                      Elige las variables para tu modelo
+                      Elige las variables para entrenar tu modelo
                     </p>
                   </div>
                 </div>
@@ -411,17 +413,17 @@ const Clean = () => {
             </div>
           </Card>
 
-          {/* Data Cleaning Actions */}
-          <Card className="p-8 bg-gradient-card border border-border/50 shadow-card hover:shadow-card-hover transition-all duration-500">
+          {/* Data Cleaning Actions mejorado */}
+          <Card className="p-8 bg-gradient-card border-2 border-border/40 shadow-card hover:shadow-glow transition-all duration-500">
             <div className="space-y-6">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-cyber flex items-center justify-center shadow-glow">
-                  <Sparkles className="w-6 h-6 text-primary-foreground" />
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-cyber flex items-center justify-center shadow-glow animate-pulse-glow">
+                  <Sparkles className="w-7 h-7 text-primary-foreground" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-semibold">Limpieza de Datos</h2>
+                  <h2 className="text-2xl font-bold">Limpieza de Datos</h2>
                   <p className="text-sm text-muted-foreground">
-                    Aplica transformaciones automáticas a tus datos
+                    Transformaciones automáticas inteligentes
                   </p>
                 </div>
               </div>
@@ -588,11 +590,11 @@ const Clean = () => {
             <Button
               onClick={() => navigate("/train")}
               size="lg"
-              className="gap-2 bg-gradient-primary hover:opacity-90 hover:shadow-glow transition-all shadow-card disabled:opacity-50"
+              className="gap-3 text-lg px-8 py-6 bg-gradient-cyber hover:opacity-90 hover:shadow-neon hover:scale-105 transition-all shadow-glow disabled:opacity-50 animate-pulse-glow rounded-xl"
               disabled={stats.numericSelected < 2}
             >
-              Continuar a Entrenar
-              <ArrowRight className="w-4 h-4" />
+              Continuar a Entrenar Modelo
+              <ArrowRight className="w-5 h-5" />
             </Button>
           </div>
         </div>
