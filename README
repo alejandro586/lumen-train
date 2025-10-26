@@ -1,0 +1,139 @@
+# Lumen-Train Backend
+
+[![Node.js](https://img.shields.io/badge/Node.js-v18%2B-blue?logo=node.js)](https://nodejs.org/) [![Express](https://img.shields.io/badge/Express-4.19%2B-orange?logo=express)](https://expressjs.com/) [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL%20Backend-purple?logo=supabase)](https://supabase.com/)
+
+Este es el **backend** para el proyecto Lumen-Train, una API ligera construida con Node.js y Express.js. Maneja el upload de archivos CSV, parsea los datos y los guarda en una base de datos Supabase (PostgreSQL gestionada). Está diseñado para integrarse con un frontend React (ver [repo principal](https://github.com/alejandro586/lumen-train)).
+
+## Descripción
+- **Funcionalidades principales:**
+  - Endpoint POST `/api/upload-csv`: Sube un CSV, lo parsea y guarda datos en la tabla `usuarios` de Supabase.
+  - Endpoint GET `/api/get-usuarios`: Lista los últimos registros de la DB (para verificación).
+- **Tecnologías:** Express.js, Multer (uploads), csv-parser (parsing), Supabase JS Client, CORS.
+- **Estructura de archivos:**
+  ```
+  lumen-train-backend/
+  ├── src/
+  │   ├── index.js          # Servidor principal
+  │   ├── routes/
+  │   │   └── upload.js     # Rutas de API
+  │   └── config/
+  │       └── supabase.js   # Cliente Supabase
+  ├── uploads/              # Archivos temporales (gitignore)
+  ├── .env                  # Variables de entorno
+  ├── package.json          # Dependencias
+  └── README.md             # Este archivo
+  ```
+
+## Prerrequisitos
+- **Node.js:** v18 o superior ([descargar](https://nodejs.org/)).
+- **npm:** Incluido con Node.js (o usa yarn).
+- **Cuenta en Supabase:** Gratuita. Crea un proyecto en [supabase.com](https://supabase.com) y obtén las credenciales (URL y service_role key).
+- **Git:** Para clonar el repo.
+
+## Instalación
+1. **Clona el repositorio:**
+   ```
+   git clone https://github.com/alejandro586/lumen-train.git
+   cd lumen-train/backend  # O la rama donde esté el backend (ej: git checkout backend-supabase-branch)
+   ```
+
+2. **Instala dependencias:**
+   ```
+   npm install
+   ```
+   - Esto instala Express, Multer, csv-parser, @supabase/supabase-js, CORS, dotenv y nodemon (dev).
+
+3. **Configura variables de entorno:**
+   - Crea un archivo `.env` en la raíz (cópialo de un ejemplo si hay, o crea manual):
+     ```
+     SUPABASE_URL=https://tu-proyecto.supabase.co
+     SUPABASE_KEY=tu-service-role-key  # De Supabase > Settings > API
+     PORT=5000  # Puerto opcional
+     ```
+   - **¡Importante!** Nunca subas `.env` a Git (está en .gitignore). Usa la **service_role key** para admin (ignora RLS).
+
+4. **Configura Supabase (una vez):**
+   - En Supabase Dashboard > SQL Editor, ejecuta:
+     ```sql
+     CREATE TABLE public.usuarios (
+         id SERIAL PRIMARY KEY,
+         nombre TEXT NOT NULL,
+         edad INTEGER,
+         email TEXT UNIQUE,
+         created_at TIMESTAMP DEFAULT NOW()
+     );
+
+     -- Política RLS para inserts públicos (opcional)
+     CREATE POLICY "allow_public_inserts" ON public.usuarios
+     AS PERMISSIVE FOR INSERT TO public WITH CHECK (true);
+     ```
+   - Activa Row Level Security en la tabla si usas auth.
+
+## Correr el Proyecto Localmente
+1. **Desarrollo (con hot-reload):**
+   ```
+   npm run dev
+   ```
+   - Corre en `http://localhost:5000`. Nodemon reinicia automáticamente.
+
+2. **Producción:**
+   ```
+   npm start
+   ```
+
+3. **Verificar:**
+   - Abre `http://localhost:5000` en el navegador (debe mostrar un error 404 o mensaje simple – confirma que corre).
+   - Prueba el endpoint con Postman o curl:
+     ```
+     # Upload CSV (usa un archivo test.csv)
+     curl -X POST http://localhost:5000/api/upload-csv -F "csvFile=@test.csv"
+     ```
+
+## Uso de la API
+- **POST /api/upload-csv:** Sube un CSV (multipart/form-data, campo `csvFile`).
+  - Headers esperados: `nombre,edad,email`.
+  - Respuesta: `{ message: "Se guardaron X registros", data: [...] }`.
+- **GET /api/get-usuarios:** Lista últimos 10 registros.
+  - Respuesta: Array de objetos de `usuarios`.
+
+Ejemplo de CSV de prueba (`test.csv`):
+```
+nombre,edad,email
+Ana,28,ana@email.com
+Luis,35,luis@email.com
+```
+
+## Integración con Frontend
+- Configura CORS en `src/index.js` para tu puerto frontend (ej: `origin: 'http://localhost:8080'`).
+- En el frontend, usa Axios para POST a `http://localhost:5000/api/upload-csv`.
+
+## Troubleshooting
+| Problema | Solución |
+|----------|----------|
+| "Port occupied" | Cambia `PORT` en `.env` (ej: 5001). |
+| "Supabase: Invalid URL" | Verifica `SUPABASE_URL` (debe ser HTTPS completa). |
+| "Column not found (PGRST204)" | Recrear tabla en Supabase; asegúrate de headers exactos en CSV. |
+| "CORS error" | Ajusta `origin` en CORS; reinicia backend. |
+| "No file uploaded" | Verifica FormData en frontend (`append('csvFile', file)`). |
+| Dependencias faltantes | `npm install` de nuevo; chequea `package.json`. |
+
+- **Logs:** Revisa la terminal para errores (ej: `console.error` en upload.js).
+- **Debug:** Agrega `console.log` en rutas para ver datos parseados.
+
+## Despliegue
+- **Vercel/Render:** Gratuito. Conecta GitHub, agrega vars `.env` en dashboard.
+- **Heroku:** `heroku create`, `git push heroku main`.
+- Actualiza URLs en frontend para producción (ej: `https://tu-backend.vercel.app/api`).
+
+## Contribuir
+- Forkea el repo, crea rama (`git checkout -b mi-feature`), commit y PR.
+- Usa ESLint/Prettier para código limpio.
+
+## Licencia
+MIT License – Ver [LICENSE](LICENSE) (agrega uno si no hay).
+
+---
+
+¡Gracias por usar Lumen-Train Backend! Si tienes issues, abre un issue en GitHub. 🚀
+
+*Última actualización: Octubre 2025*
