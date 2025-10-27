@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Upload as UploadIcon, Database, ArrowRight, FileText, CheckCircle2, CloudUpload } from "lucide-react";
+import { Upload as UploadIcon, Database, ArrowRight, FileText, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,7 +7,6 @@ import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useData } from "@/contexts/DataContext";
-import axios from "axios";  // Nueva importación para el backend
 
 const Upload = () => {
   const navigate = useNavigate();
@@ -20,7 +19,6 @@ const Upload = () => {
     username: "",
     password: "",
   });
-  const [uploading, setUploading] = useState(false);  // Estado para loading del upload
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -74,42 +72,6 @@ const Upload = () => {
     }
   };
 
-  // Nueva función: Upload al backend (Supabase)
-  const handleUploadToBackend = async () => {
-    if (!uploadedFile) {
-      toast({
-        title: "Sin archivo",
-        description: "Por favor sube un archivo CSV primero",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setUploading(true);
-    const formData = new FormData();
-    formData.append('csvFile', uploadedFile);
-
-    try {
-    const response = await axios.post('http://localhost:5000/api/upload-csv', formData, {
-    headers: {
-        'Content-Type': 'multipart/form-data',
-    },
-  });
-      toast({
-        title: "¡Éxito!",
-        description: response.data.message,  // Ej: "Se guardaron X registros exitosamente"
-      });
-    } catch (error: any) {
-      console.error('Error en upload:', error);
-      toast({
-        title: "Error al subir",
-        description: error.response?.data?.error || 'Inténtalo de nuevo. Verifica que el backend esté corriendo.',
-        variant: "destructive",
-      });
-    } finally {
-      setUploading(false);
-    }
-  };
 
   const handleProceed = () => {
     if (!uploadedFile) {
@@ -205,26 +167,6 @@ const Upload = () => {
                       </p>
                     </div>
                   </div>
-
-                  {/* Nuevo botón: Subir a Supabase */}
-                  <Button
-                    onClick={handleUploadToBackend}
-                    size="lg"
-                    className="w-full gap-3 bg-gradient-cyber font-bold hover:opacity-90 hover:shadow-neon hover:scale-105 transition-all rounded-xl shadow-glow animate-pulse-glow"
-                    disabled={uploading || !uploadedFile}
-                  >
-                    {uploading ? (
-                      <>
-                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        Subiendo a Supabase...
-                      </>
-                    ) : (
-                      <>
-                        <CloudUpload className="w-5 h-5" />
-                        Subir a Supabase Ahora
-                      </>
-                    )}
-                  </Button>
                 </div>
               )}
             </div>

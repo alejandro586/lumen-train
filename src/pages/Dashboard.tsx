@@ -1,5 +1,8 @@
-import { useState } from "react";
-import { Database, Sparkles, Settings, BarChart3, FileText, Columns, Download, BarChart } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Database, Sparkles, Settings, BarChart3, FileText, Columns, Download, BarChart, LogOut, User } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { ModuleCard } from "@/components/ModuleCard";
 import { useData } from "@/contexts/DataContext";
 import { Card } from "@/components/ui/card";
@@ -9,9 +12,33 @@ import { AnalysisDialog } from "@/components/AnalysisDialog";
 import { useToast } from "@/hooks/use-toast";
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const { csvData, csvColumns, fileName } = useData();
   const { toast } = useToast();
   const [showAnalysis, setShowAnalysis] = useState(false);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+
+  useEffect(() => {
+    // Check current session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    toast({
+      title: "Sesión cerrada",
+      description: "Has cerrado sesión correctamente",
+    });
+  };
 
   const handleExport = () => {
     if (!csvData || !csvColumns) return;
@@ -96,15 +123,47 @@ const Dashboard = () => {
 
       {/* Header mejorado */}
       <header className="border-b border-border/30 bg-card/20 backdrop-blur-2xl sticky top-0 z-20 shadow-xl">
-        <div className="container mx-auto px-6 py-6 flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-cyber flex items-center justify-center shadow-glow animate-pulse-glow">
-            <Database className="w-7 h-7 text-primary-foreground" />
+        <div className="container mx-auto px-6 py-6 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-cyber flex items-center justify-center shadow-glow animate-pulse-glow">
+              <Database className="w-7 h-7 text-primary-foreground" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold bg-gradient-cyber bg-clip-text text-transparent">
+                ML Data Pipeline
+              </h1>
+              <p className="text-sm text-muted-foreground">Sistema de Machine Learning End-to-End con IA Real</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-3xl font-bold bg-gradient-cyber bg-clip-text text-transparent">
-              ML Data Pipeline
-            </h1>
-            <p className="text-sm text-muted-foreground">Sistema de Machine Learning End-to-End con IA Real</p>
+          
+          <div className="flex items-center gap-3">
+            {user ? (
+              <>
+                <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-card/50 border border-border/50">
+                  <User className="w-4 h-4 text-primary" />
+                  <span className="text-sm text-muted-foreground">{user.email}</span>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleLogout}
+                  className="gap-2 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/50"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Cerrar Sesión
+                </Button>
+              </>
+            ) : (
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => navigate("/auth")}
+                className="gap-2 bg-gradient-cyber hover:opacity-90"
+              >
+                <User className="w-4 h-4" />
+                Iniciar Sesión
+              </Button>
+            )}
           </div>
         </div>
       </header>

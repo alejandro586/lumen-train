@@ -9,6 +9,7 @@ import Upload from "./pages/Upload";
 import Clean from "./pages/Clean";
 import Train from "./pages/Train";
 import Results from "./pages/Results";
+import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
             <Route path="/clean" element={<Clean />} />
             <Route path="/train" element={<Train />} />
             <Route path="/results" element={<Results />} />
+            <Route path="/auth" element={<Auth />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
